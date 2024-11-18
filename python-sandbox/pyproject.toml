@@ -1,0 +1,15 @@
+[project]
+name = "python-sandbox"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "grpcio-tools>=1.68.0",
+    "grpcio>=1.68.0",
+    "requests>=2.32.3",
+    "matplotlib>=3.9.2",
+    "numpy>=2.0.2",
+    "jupyter-client>=8.6.3",
+    "ipykernel>=6.29.5",
+]
