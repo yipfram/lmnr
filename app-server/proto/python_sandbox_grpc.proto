@@ -1,0 +1,26 @@
+syntax = "proto3";
+package python_sandbox_grpc;
+
+message RunRequest {
+    string code = 1;
+}
+
+message Result {
+    string text = 1;
+    optional string image = 2;
+}
+
+message RunResponse {
+    repeated Result results = 1;
+    string stdout = 2;
+    string stderr = 3;
+}
+
+message HealthcheckRequest {}
+
+message HealthcheckResponse {}
+
+service PythonSandbox {
+    rpc Run(RunRequest) returns (RunResponse);
+    rpc Healthcheck(HealthcheckRequest) returns (HealthcheckResponse);
+}

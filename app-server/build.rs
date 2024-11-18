@@ -8,13 +8,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .out_dir("./src/semantic_search/")
         .compile_protos(&[proto_file], &["proto"])?;
 
-    let proto_file = "./proto/code_executor_grpc.proto";
+    let proto_file = "./proto/python_sandbox_grpc.proto";
 
     tonic_build::configure()
         .protoc_arg("--experimental_allow_proto3_optional") // for older systems
         .build_client(true)
         .build_server(false)
-        .out_dir("./src/code_executor/")
+        .out_dir("./src/python_sandbox/")
         .compile_protos(&[proto_file], &["proto"])?;
 
     tonic_build::configure()

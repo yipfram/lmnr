@@ -6,13 +6,15 @@ use actix_web::{
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
 use aws_config::BehaviorVersion;
-use code_executor::{code_executor_grpc::code_executor_client::CodeExecutorClient, CodeExecutor};
 use dashmap::DashMap;
 use db::{pipelines::PipelineVersion, project_api_keys::ProjectApiKey, user::User};
 use features::{is_feature_enabled, Feature};
 use names::NameGenerator;
 use opentelemetry::opentelemetry::proto::collector::trace::v1::trace_service_server::TraceServiceServer;
 use projects::Project;
+use python_sandbox::{
+    python_sandbox_grpc::python_sandbox_client::PythonSandboxClient, PythonSandbox,
+};
 use runtime::{create_general_purpose_runtime, wait_stop_signal};
 use storage::{mock::MockStorage, Storage};
 use tonic::transport::Server;
@@ -54,7 +56,6 @@ mod auth;
 mod cache;
 mod ch;
 mod chunk;
-mod code_executor;
 mod datasets;
 mod db;
 mod engine;
@@ -67,6 +68,7 @@ mod opentelemetry;
 mod pipeline;
 mod projects;
 mod provider_api_keys;
+mod python_sandbox;
 mod routes;
 mod runtime;
 mod semantic_search;
@@ -270,21 +272,21 @@ fn main() -> anyhow::Result<()> {
                         Arc::new(semantic_search::mock::MockSemanticSearch {})
                     };
 
-                let code_executor: Arc<dyn CodeExecutor> = if is_feature_enabled(Feature::FullBuild)
-                {
-                    let code_executor_url =
-                        env::var("CODE_EXECUTOR_URL").expect("CODE_EXECUTOR_URL must be set");
-                    let code_executor_client = Arc::new(
-                        CodeExecutorClient::connect(code_executor_url)
-                            .await
-                            .unwrap(),
-                    );
-                    Arc::new(code_executor::code_executor_impl::CodeExecutorImpl::new(
-                        code_executor_client,
-                    ))
-                } else {
-                    Arc::new(code_executor::mock::MockCodeExecutor {})
-                };
+                let code_executor: Arc<dyn PythonSandbox> =
+                    if is_feature_enabled(Feature::FullBuild) {
+                        let python_sandbox_url =
+                            env::var("PYTHON_SANDBOX_URL").expect("PYTHON_SANDBOX_URL must be set");
+                        let python_sandbox_client = Arc::new(
+                            PythonSandboxClient::connect(python_sandbox_url)
+                                .await
+                                .unwrap(),
+                        );
+                        Arc::new(python_sandbox::python_sandbox_impl::PythonSandboxImpl::new(
+                            python_sandbox_client,
+                        ))
+                    } else {
+                        Arc::new(python_sandbox::mock::MockPythonSandbox {})
+                    };
 
                 let client = reqwest::Client::new();
                 let anthropic = language_model::Anthropic::new(client.clone());

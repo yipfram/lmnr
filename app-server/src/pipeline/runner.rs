@@ -3,7 +3,6 @@ use std::{collections::HashSet, sync::Arc};
 use crate::{
     api::v1::traces::RabbitMqSpanMessage,
     cache::Cache,
-    code_executor::CodeExecutor,
     db::{
         spans::Span,
         trace::{CurrentTraceAndSpan, TraceType},
@@ -11,6 +10,7 @@ use crate::{
     },
     engine::{engine::EngineOutput, Engine},
     features::{is_feature_enabled, Feature},
+    python_sandbox::PythonSandbox,
     routes::pipelines::GraphInterruptMessage,
     traces::{
         utils::{get_llm_usage_for_span, record_span_to_db},
@@ -104,7 +104,7 @@ pub struct PipelineRunner {
     chunker_runner: Arc<ChunkerRunner>,
     semantic_search: Arc<dyn SemanticSearch>,
     rabbitmq_connection: Option<Arc<Connection>>,
-    code_executor: Arc<dyn CodeExecutor>,
+    code_executor: Arc<dyn PythonSandbox>,
     db: Arc<DB>,
     cache: Arc<Cache>,
 }
@@ -115,7 +115,7 @@ impl PipelineRunner {
         chunker_runner: Arc<ChunkerRunner>,
         semantic_search: Arc<dyn SemanticSearch>,
         rabbitmq_connection: Option<Arc<Connection>>,
-        code_executor: Arc<dyn CodeExecutor>,
+        code_executor: Arc<dyn PythonSandbox>,
         db: Arc<DB>,
         cache: Arc<Cache>,
     ) -> Self {
@@ -154,7 +154,7 @@ impl PipelineRunner {
             run_type: graph.run_type.clone(),
             pipeline_runner: self.clone(),
             baml_schemas: validated_schemas,
-            code_executor: self.code_executor.clone(),
+            python_sandbox: self.code_executor.clone(),
             db: self.db.clone(),
             cache: self.cache.clone(),
         };
@@ -199,7 +199,7 @@ impl PipelineRunner {
             run_type: graph.run_type.clone(),
             pipeline_runner: self.clone(),
             baml_schemas: validated_schemas,
-            code_executor: self.code_executor.clone(),
+            python_sandbox: self.code_executor.clone(),
             db: self.db.clone(),
             cache: self.cache.clone(),
         };

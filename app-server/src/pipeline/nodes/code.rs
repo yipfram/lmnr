@@ -20,7 +20,6 @@ pub struct CodeNode {
     /// to -> from
     pub inputs_mappings: HashMap<Uuid, Uuid>,
     pub code: String,
-    pub fn_name: String,
 }
 
 #[async_trait]
@@ -54,31 +53,33 @@ impl RunnableNode for CodeNode {
         if output_handle.is_none() {
             return Err(anyhow::anyhow!("No output handle found"));
         }
-        let output_handle = output_handle.unwrap();
 
-        match context
-            .code_executor
-            .execute(
-                &self.code,
-                &self.fn_name,
-                &inputs,
-                output_handle.handle_type.clone(),
-            )
-            .await
-        {
-            Ok(result) => Ok(RunOutput::Success((result, None))),
-            Err(err) => Err(err.into()),
+        let code = self.code.clone();
+
+        // injecting main function call with kwargs from inputs at the end of the code
+        let code = format!(
+            "{code}\n\nmain({})",
+            inputs
+                .into_iter()
+                .map(|(k, v)| {
+                    let value: String = v.into();
+                    format!("{k}={value}", k = k, value = value)
+                })
+                .collect::<Vec<String>>()
+                .join(", ")
+        );
+
+        let run_result = context.python_sandbox.run(&code).await?;
+
+        match run_result.results.first() {
+            Some(result) => Ok(RunOutput::Success((result.text.clone().into(), None))),
+            None => Err(anyhow::anyhow!(run_result.stderr)),
         }
     }
 }
 
 impl CodeNode {
-    pub fn from_params(
-        name: &str,
-        input_names: Vec<&str>,
-        code: String,
-        fn_name: Option<String>,
-    ) -> Self {
+    pub fn from_params(name: &str, input_names: Vec<&str>, code: String) -> Self {
         let inputs = input_names
             .iter()
             .map(|name| Handle {
@@ -102,7 +103,6 @@ impl CodeNode {
             outputs,
             inputs_mappings: HashMap::new(),
             code,
-            fn_name: fn_name.unwrap_or("main".to_string()),
         }
     }
 }

@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use uuid::Uuid;
 
-use crate::code_executor::code_executor_grpc::HandleType as GrpcHandleType;
 use crate::language_model::ChatMessage;
 use crate::language_model::{ChatMessageContent, ChatMessageContentPart};
 
@@ -223,18 +222,6 @@ pub enum HandleType {
     ChatMessageList,
     Float,
     Any,
-}
-
-impl Into<GrpcHandleType> for HandleType {
-    fn into(self) -> GrpcHandleType {
-        match self {
-            HandleType::String => GrpcHandleType::String,
-            HandleType::StringList => GrpcHandleType::StringList,
-            HandleType::ChatMessageList => GrpcHandleType::ChatMessageList,
-            HandleType::Float => GrpcHandleType::Float,
-            HandleType::Any => GrpcHandleType::Any,
-        }
-    }
 }
 
 #[derive(Debug, Deserialize, Clone, Serialize)]
