@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     cache::Cache, chunk::runner::ChunkerRunner, db::DB, language_model::LanguageModelRunner,
-    python_sandbox::PythonSandbox, semantic_search::SemanticSearch,
+    sandbox::Sandbox, semantic_search::SemanticSearch,
 };
 
 use super::{nodes::StreamChunk, runner::PipelineRunner, RunType};
@@ -24,7 +24,7 @@ pub struct Context {
     /// This is stored in the context before runtime
     /// to avoid the schema being validated on every LLM node run.
     pub baml_schemas: HashMap<Uuid, BamlContext>,
-    pub python_sandbox: Arc<dyn PythonSandbox>,
+    pub sandbox: Arc<dyn Sandbox>,
     pub db: Arc<DB>,
     pub cache: Arc<Cache>,
 }

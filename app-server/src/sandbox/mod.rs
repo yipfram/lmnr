@@ -1,23 +1,26 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use serde::Serialize;
 pub mod mock;
-pub mod python_sandbox_grpc;
-pub mod python_sandbox_impl;
+pub mod sandbox_grpc;
+pub mod sandbox_impl;
 
+#[derive(Serialize)]
 pub struct RunResult {
     pub text: String,
     // base64 encoded image
     pub image: Option<String>,
 }
 
-pub struct PythonSandboxResult {
+#[derive(Serialize)]
+pub struct SandboxRunCodeResult {
     pub results: Vec<RunResult>,
     pub stdout: String,
     pub stderr: String,
 }
 
-impl From<python_sandbox_grpc::Result> for RunResult {
-    fn from(result: python_sandbox_grpc::Result) -> Self {
+impl From<sandbox_grpc::Result> for RunResult {
+    fn from(result: sandbox_grpc::Result) -> Self {
         Self {
             text: result.text,
             image: result.image,
@@ -25,8 +28,8 @@ impl From<python_sandbox_grpc::Result> for RunResult {
     }
 }
 
-impl From<python_sandbox_grpc::RunResponse> for PythonSandboxResult {
-    fn from(response: python_sandbox_grpc::RunResponse) -> Self {
+impl From<sandbox_grpc::RunCodeResponse> for SandboxRunCodeResult {
+    fn from(response: sandbox_grpc::RunCodeResponse) -> Self {
         Self {
             results: response.results.into_iter().map(|r| r.into()).collect(),
             stdout: response.stdout,
@@ -36,6 +39,6 @@ impl From<python_sandbox_grpc::RunResponse> for PythonSandboxResult {
 }
 
 #[async_trait]
-pub trait PythonSandbox: Sync + Send {
-    async fn run(&self, code: &String) -> Result<PythonSandboxResult>;
+pub trait Sandbox: Sync + Send {
+    async fn run_code(&self, code: &String) -> Result<SandboxRunCodeResult>;
 }

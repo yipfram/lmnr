@@ -2,12 +2,12 @@ from concurrent import futures
 
 import logging
 import grpc
-from python_sandbox_pb2_grpc import (
-    add_PythonSandboxServicer_to_server,
-    PythonSandboxServicer,
+from sandbox_pb2_grpc import (
+    add_SandboxServicer_to_server,
+    SandboxServicer,
 )
-from python_sandbox_pb2 import (
-    RunResponse,
+from sandbox_pb2 import (
+    RunCodeResponse,
     Result,
     HealthcheckResponse,
 )
@@ -24,7 +24,7 @@ LOGGER.setLevel(logging.DEBUG)
 logging.basicConfig()
 
 
-class PythonSandboxServicer(PythonSandboxServicer):
+class SandboxServicer(SandboxServicer):
     def __init__(self):
         self.kernel_manager = jupyter_client.KernelManager()
         self.kernel_manager.start_kernel()
@@ -37,12 +37,14 @@ class PythonSandboxServicer(PythonSandboxServicer):
         if hasattr(self, 'kernel_manager'):
             self.kernel_manager.shutdown_kernel()
 
-    def Run(self, request, context):
+    def RunCode(self, request, context):
+
         self.kernel_client.execute(request.code)
         results = []
 
         stdout = ""
         stderr = ""
+
         while True:
             msg = self.kernel_client.get_iopub_msg(timeout=10)
             if msg['header']['msg_type'] == 'execute_result':
@@ -61,18 +63,21 @@ class PythonSandboxServicer(PythonSandboxServicer):
             elif msg['header']['msg_type'] == 'status' and msg['content']['execution_state'] == 'idle':
                 break
 
-        results = [Result(text=result["text/plain"], image=result.get("image/png")) for result in results]
+        results = [
+            Result(text=str(result["text/plain"]), image=result.get("image/png"))
+            for result in results
+        ]
 
-        return RunResponse(results=results, stdout=stdout, stderr=stderr)
+        return RunCodeResponse(results=results, stdout=stdout, stderr=stderr)
 
     def Healthcheck(self, request, context):
         return HealthcheckResponse()
 
 
 def serve():
-    servicer = PythonSandboxServicer()
+    servicer = SandboxServicer()
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=8))
-    add_PythonSandboxServicer_to_server(servicer, server)
+    add_SandboxServicer_to_server(servicer, server)
     server.add_insecure_port(f"[::]:{PORT}")
     server.start()
 

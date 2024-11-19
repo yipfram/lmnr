@@ -1,8 +1,3 @@
-import { memo } from 'react';
-import GenericNodeComponent from './generic-node';
-import { type OutputNode } from '@/lib/flow/types';
-import useStore from '@/lib/flow/store';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -10,55 +5,263 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { EventType } from '@/lib/events/types';
+import useStore from '@/lib/flow/store';
+import {
+  Handle,
+  Position,
+  type Connection,
+  useUpdateNodeInternals,
+  useOnSelectionChange,
+  Node,
+  Edge
+} from 'reactflow';
+import { type GenericNode, NodeType, NodeHandleType, OutputNode } from '@/lib/flow/types';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import { useFlowContext } from '@/contexts/pipeline-version-context';
+import { memo, useCallback, useEffect, useState } from 'react';
+import { NODE_TYPE_TO_DOCS, createNodeData } from '@/lib/flow/utils';
+import { Button } from '@/components/ui/button';
+import { Info, Settings, Trash } from 'lucide-react';
 
-function capitalizeFirstLetter(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
+interface OutputNodeComponentProps {
+  id: string;
+  data: GenericNode;
+  children?: React.ReactNode;
+  className?: string;
 }
 
 const OutputNodeComponent = ({
   id,
-  data
-}: {
-  id: string;
-  data: OutputNode;
-}) => {
-  const { updateNodeData } = useStore((state) => state);
+  data,
+  children
+}: OutputNodeComponentProps) => {
+  const {
+    getNode,
+    updateNodeData,
+    dropEdgeForHandle,
+    edges,
+    setNodes,
+    setFocusedNodeId,
+    focusedNodeId,
+    highlightedNodeId
+  } = useStore((state) => state);
+  const { editable } = useFlowContext();
+  const [shouldUpdate, setShouldUpdate] = useState(false);
+  const updateNodeInternals = useUpdateNodeInternals();
+  const [nodeName, setNodeName] = useState(data.name);
+  const [isSelected, setIsSelected] = useState(false);
+
+  const onChange = useCallback(
+    ({ nodes, edges }: { nodes: Node[]; edges: Edge[] }) => {
+      if (nodes.length === 0) {
+        setIsSelected(false);
+        return;
+      }
+
+      setIsSelected(nodes[0].id === id);
+    },
+    []
+  );
+
+  useOnSelectionChange({
+    onChange
+  });
+
+  useEffect(() => {
+    updateNodeInternals(id);
+    setNodeName(data.name);
+  }, [data]);
+
+  useEffect(() => {
+    const defaultData = createNodeData('', data.type);
+
+    const newDataKeys = new Set(Object.keys(defaultData));
+    const currentDataKeys = new Set(Object.keys(data));
+
+    const missingKeys = Array.from(newDataKeys).filter(
+      (key) => !currentDataKeys.has(key)
+    );
+
+    if (defaultData.version !== data.version) {
+      setShouldUpdate(true);
+    }
+
+    // model is now optional and can be disabled on LLM nodes.
+    if (
+      data.type === NodeType.LLM &&
+      missingKeys.length === 1 &&
+      missingKeys[0] === 'model'
+    ) {
+      return;
+    }
+
+    setShouldUpdate(missingKeys.length > 0);
+  }, [data]);
+
+  const isValidConnection = (connection: Connection) => {
+    if (!connection.source || !connection.target) return false;
+
+    const sourceNode = getNode(connection.source);
+    const targetNode = getNode(connection.target);
+
+    const sourceHandleType = sourceNode?.data.outputs.find(
+      (output) => output.id === connection.sourceHandle
+    )?.type;
+    let targetHandleType = targetNode?.data.inputs.find(
+      (input) => input.id === connection.targetHandle
+    )?.type;
+
+    // when trying to connect to a dynamic input, the targetHandleType cannot be found in the node's inputs
+    if (!targetHandleType) {
+      targetHandleType = targetNode?.data.dynamicInputs?.find(
+        (input) => input.id === connection.targetHandle
+      )?.type;
+    }
+
+    // if target handle is any, any connection is valid
+    if (
+      targetHandleType == NodeHandleType.ANY ||
+      sourceHandleType == NodeHandleType.ANY
+    )
+      return true;
+
+    return sourceHandleType === targetHandleType;
+  };
+
+  const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  const handleDoubleClick = (nodeId: string) => {
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+      setClickTimeout(null);
+      setFocusedNodeId(nodeId);
+    } else {
+      // If no timeout, set a new one to wait for the second click
+      const timeoutId = setTimeout(() => {
+        setClickTimeout(null);
+      }, 300);
+      setClickTimeout(timeoutId);
+    }
+  };
+
+  // combine data.inputs and data.fixedInputs
+  const inputs = data.inputs.concat(
+    data.dynamicInputs?.map((input) => ({
+      id: input.id,
+      name: input.name,
+      type: input.type
+    })) ?? []
+  );
 
   return (
-    <GenericNodeComponent id={id} data={data}>
-      <Label>Cast type (optional)</Label>
-      <Select
-        value={data.outputCastType ?? undefined}
-        onValueChange={(value: string) => {
-          if (value === 'null') {
-            updateNodeData(id, {
-              outputCastType: null
-            } as OutputNode);
-            return;
-          }
+    <>
+      <div
+        className={cn(
+          'transition-all absolute flex left-[2px] space-x-2 top-[-32px] w-60 items-center align-middle justify-center',
+          isSelected ? '' : 'hidden'
+        )}
+      >
+        <Button
+          variant={'secondary'}
+          className={cn('bg-background border border-blue-300', editable ? '' : 'hidden')}
+          onClick={() => {
+            // delete this node
+            for (const handle of inputs) {
+              dropEdgeForHandle(handle.id);
+            }
+            for (const handle of data.outputs) {
+              dropEdgeForHandle(handle.id);
+            }
 
-          const eventType = EventType[value as keyof typeof EventType];
-          updateNodeData(id, {
-            outputCastType: eventType
-          } as OutputNode);
+            if (focusedNodeId === id) {
+              setFocusedNodeId(null);
+            }
+
+            setNodes((nodes) => nodes.filter((node) => node.id !== id));
+          }}
+        >
+          <Trash size={14} />
+        </Button>
+      </div>
+      <div
+        className={cn(
+          'z-0 transition-all flex items-center border-2 rounded-md border-transparent',
+          !editable ? 'pointer-events-none' : '',
+          isSelected ? 'border-2 border-blue-300' : '',
+          highlightedNodeId === data.id ? 'border-2 border-blue-300' : ''
+        )}
+        onClick={() => {
+          handleDoubleClick(data.id);
         }}
       >
-        <SelectTrigger className="mb-4 h-8 w-full font-medium">
-          <SelectValue placeholder="-" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem key={-1} value={'null'}>
-            -
-          </SelectItem>
-          {Object.keys(EventType).map((eventType, i) => (
-            <SelectItem key={i} value={eventType}>
-              {capitalizeFirstLetter(eventType.toLowerCase())}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </GenericNodeComponent>
+        <div className={cn('w-60 bg-background border rounded-md')}>
+          <div className="flex flex-col">
+            <div
+              className="h-8 space-x-2 text-xs font-medium p-2 flex rounded-t-md items-center border-b bg-card"
+            >
+              <span className="text-xs rounded bg-blue-500/60 px-1.5 py-0.5">
+                {data.type}
+              </span>
+              <div className="flex-1"></div>
+              {NODE_TYPE_TO_DOCS[data.type] && (
+                <a target="_blank" href={NODE_TYPE_TO_DOCS[data.type]}>
+                  <Info
+                    size={14}
+                    className="cursor-pointer hover:bg-black hover:bg-opacity-0"
+                  />
+                </a>
+              )}
+            </div>
+            <div className={cn('flex', data.collapsed ? 'w-60' : '')}>
+              <div className="font-medium w-full">
+                <div className="flex flex-col p-2 space-y-1">
+                  <Label className="text-xs text-secondary-foreground">Output name</Label>
+                  <Input
+                    key={id}
+                    placeholder="Name of the node"
+                    className="w-full nodrag nowheel"
+                    value={nodeName}
+                    onChange={(e) => {
+                      setNodeName(e.currentTarget.value);
+                      updateNodeData(id, {
+                        name: e.currentTarget.value
+                      } as GenericNode);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    spellCheck={false}
+                  />
+                  {children}
+                </div>
+                <div className="flex">
+
+                  <Handle
+                    type="target"
+                    id={data.inputs[0].id}
+                    position={Position.Left}
+                    style={{
+                      position: 'absolute',
+                      width: '12px',
+                      right: '-4px',
+                      height: '12px',
+                      border: '2px',
+                      borderColor: '#AB3E65',
+                      borderStyle: 'solid',
+                      backgroundColor: '#F08F6B'
+                    }}
+                    className="h-4 w-4 rounded-full mt-[1px] border-2"
+                    isValidConnection={isValidConnection}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

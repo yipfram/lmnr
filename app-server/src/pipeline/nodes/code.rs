@@ -63,13 +63,13 @@ impl RunnableNode for CodeNode {
                 .into_iter()
                 .map(|(k, v)| {
                     let value: String = v.into();
-                    format!("{k}={value}", k = k, value = value)
+                    format!("{k}=\"{value}\"", k = k, value = value)
                 })
                 .collect::<Vec<String>>()
                 .join(", ")
         );
 
-        let run_result = context.python_sandbox.run(&code).await?;
+        let run_result = context.sandbox.run_code(&code).await?;
 
         match run_result.results.first() {
             Some(result) => Ok(RunOutput::Success((result.text.clone().into(), None))),

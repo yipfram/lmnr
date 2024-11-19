@@ -12,10 +12,8 @@ use features::{is_feature_enabled, Feature};
 use names::NameGenerator;
 use opentelemetry::opentelemetry::proto::collector::trace::v1::trace_service_server::TraceServiceServer;
 use projects::Project;
-use python_sandbox::{
-    python_sandbox_grpc::python_sandbox_client::PythonSandboxClient, PythonSandbox,
-};
 use runtime::{create_general_purpose_runtime, wait_stop_signal};
+use sandbox::{sandbox_grpc::sandbox_client::SandboxClient, Sandbox};
 use storage::{mock::MockStorage, Storage};
 use tonic::transport::Server;
 use traces::{
@@ -68,9 +66,9 @@ mod opentelemetry;
 mod pipeline;
 mod projects;
 mod provider_api_keys;
-mod python_sandbox;
 mod routes;
 mod runtime;
+mod sandbox;
 mod semantic_search;
 mod storage;
 mod traces;
@@ -272,21 +270,15 @@ fn main() -> anyhow::Result<()> {
                         Arc::new(semantic_search::mock::MockSemanticSearch {})
                     };
 
-                let code_executor: Arc<dyn PythonSandbox> =
-                    if is_feature_enabled(Feature::FullBuild) {
-                        let python_sandbox_url =
-                            env::var("PYTHON_SANDBOX_URL").expect("PYTHON_SANDBOX_URL must be set");
-                        let python_sandbox_client = Arc::new(
-                            PythonSandboxClient::connect(python_sandbox_url)
-                                .await
-                                .unwrap(),
-                        );
-                        Arc::new(python_sandbox::python_sandbox_impl::PythonSandboxImpl::new(
-                            python_sandbox_client,
-                        ))
-                    } else {
-                        Arc::new(python_sandbox::mock::MockPythonSandbox {})
-                    };
+                let sandbox: Arc<dyn Sandbox> = if is_feature_enabled(Feature::FullBuild) {
+                    let sandbox_url = env::var("SANDBOX_URL").expect("SANDBOX_URL must be set");
+
+                    let sandbox_client =
+                        Arc::new(SandboxClient::connect(sandbox_url).await.unwrap());
+                    Arc::new(sandbox::sandbox_impl::SandboxImpl::new(sandbox_client))
+                } else {
+                    Arc::new(sandbox::mock::MockSandbox {})
+                };
 
                 let client = reqwest::Client::new();
                 let anthropic = language_model::Anthropic::new(client.clone());
@@ -344,7 +336,7 @@ fn main() -> anyhow::Result<()> {
                         chunker_runner.clone(),
                         semantic_search.clone(),
                         rabbitmq_connection.clone(),
-                        code_executor.clone(),
+                        sandbox.clone(),
                         db_for_http.clone(),
                         cache_for_http.clone(),
                     ));
@@ -380,6 +372,7 @@ fn main() -> anyhow::Result<()> {
                         .app_data(web::Data::new(semantic_search.clone()))
                         .app_data(web::Data::new(chunker_runner.clone()))
                         .app_data(web::Data::new(storage.clone()))
+                        .app_data(web::Data::new(sandbox.clone()))
                         // Scopes with specific auth or no auth
                         .service(
                             web::scope("api/v1/auth")
@@ -406,6 +399,7 @@ fn main() -> anyhow::Result<()> {
                                 .service(api::v1::datasets::get_datapoints)
                                 .service(api::v1::evaluations::create_evaluation)
                                 .service(api::v1::metrics::process_metrics)
+                                .service(api::v1::sandbox::run_code)
                                 .app_data(PayloadConfig::new(10 * 1024 * 1024)),
                         )
                         // Scopes with generic auth

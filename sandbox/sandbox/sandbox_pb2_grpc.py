@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import python_sandbox_pb2 as python__sandbox__pb2
+import sandbox_pb2 as sandbox__pb2
 
 GRPC_GENERATED_VERSION = '1.68.0'
 GRPC_VERSION = grpc.__version__
@@ -18,14 +18,14 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in python_sandbox_pb2_grpc.py depends on'
+        + f' but the generated code in sandbox_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class PythonSandboxStub(object):
+class SandboxStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -34,22 +34,22 @@ class PythonSandboxStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.Run = channel.unary_unary(
-                '/python_sandbox.PythonSandbox/Run',
-                request_serializer=python__sandbox__pb2.RunRequest.SerializeToString,
-                response_deserializer=python__sandbox__pb2.RunResponse.FromString,
+        self.RunCode = channel.unary_unary(
+                '/sandbox_grpc.Sandbox/RunCode',
+                request_serializer=sandbox__pb2.RunCodeRequest.SerializeToString,
+                response_deserializer=sandbox__pb2.RunCodeResponse.FromString,
                 _registered_method=True)
         self.Healthcheck = channel.unary_unary(
-                '/python_sandbox.PythonSandbox/Healthcheck',
-                request_serializer=python__sandbox__pb2.HealthcheckRequest.SerializeToString,
-                response_deserializer=python__sandbox__pb2.HealthcheckResponse.FromString,
+                '/sandbox_grpc.Sandbox/Healthcheck',
+                request_serializer=sandbox__pb2.HealthcheckRequest.SerializeToString,
+                response_deserializer=sandbox__pb2.HealthcheckResponse.FromString,
                 _registered_method=True)
 
 
-class PythonSandboxServicer(object):
+class SandboxServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def Run(self, request, context):
+    def RunCode(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -62,31 +62,31 @@ class PythonSandboxServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_PythonSandboxServicer_to_server(servicer, server):
+def add_SandboxServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'Run': grpc.unary_unary_rpc_method_handler(
-                    servicer.Run,
-                    request_deserializer=python__sandbox__pb2.RunRequest.FromString,
-                    response_serializer=python__sandbox__pb2.RunResponse.SerializeToString,
+            'RunCode': grpc.unary_unary_rpc_method_handler(
+                    servicer.RunCode,
+                    request_deserializer=sandbox__pb2.RunCodeRequest.FromString,
+                    response_serializer=sandbox__pb2.RunCodeResponse.SerializeToString,
             ),
             'Healthcheck': grpc.unary_unary_rpc_method_handler(
                     servicer.Healthcheck,
-                    request_deserializer=python__sandbox__pb2.HealthcheckRequest.FromString,
-                    response_serializer=python__sandbox__pb2.HealthcheckResponse.SerializeToString,
+                    request_deserializer=sandbox__pb2.HealthcheckRequest.FromString,
+                    response_serializer=sandbox__pb2.HealthcheckResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'python_sandbox.PythonSandbox', rpc_method_handlers)
+            'sandbox_grpc.Sandbox', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('python_sandbox.PythonSandbox', rpc_method_handlers)
+    server.add_registered_method_handlers('sandbox_grpc.Sandbox', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class PythonSandbox(object):
+class Sandbox(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def Run(request,
+    def RunCode(request,
             target,
             options=(),
             channel_credentials=None,
@@ -99,9 +99,9 @@ class PythonSandbox(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/python_sandbox.PythonSandbox/Run',
-            python__sandbox__pb2.RunRequest.SerializeToString,
-            python__sandbox__pb2.RunResponse.FromString,
+            '/sandbox_grpc.Sandbox/RunCode',
+            sandbox__pb2.RunCodeRequest.SerializeToString,
+            sandbox__pb2.RunCodeResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -126,9 +126,9 @@ class PythonSandbox(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/python_sandbox.PythonSandbox/Healthcheck',
-            python__sandbox__pb2.HealthcheckRequest.SerializeToString,
-            python__sandbox__pb2.HealthcheckResponse.FromString,
+            '/sandbox_grpc.Sandbox/Healthcheck',
+            sandbox__pb2.HealthcheckRequest.SerializeToString,
+            sandbox__pb2.HealthcheckResponse.FromString,
             options,
             channel_credentials,
             insecure,

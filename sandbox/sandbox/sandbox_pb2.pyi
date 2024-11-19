@@ -5,7 +5,7 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class RunRequest(_message.Message):
+class RunCodeRequest(_message.Message):
     __slots__ = ("code",)
     CODE_FIELD_NUMBER: _ClassVar[int]
     code: str
@@ -19,7 +19,7 @@ class Result(_message.Message):
     image: str
     def __init__(self, text: _Optional[str] = ..., image: _Optional[str] = ...) -> None: ...
 
-class RunResponse(_message.Message):
+class RunCodeResponse(_message.Message):
     __slots__ = ("results", "stdout", "stderr")
     RESULTS_FIELD_NUMBER: _ClassVar[int]
     STDOUT_FIELD_NUMBER: _ClassVar[int]

@@ -10,8 +10,8 @@ use crate::{
     },
     engine::{engine::EngineOutput, Engine},
     features::{is_feature_enabled, Feature},
-    python_sandbox::PythonSandbox,
     routes::pipelines::GraphInterruptMessage,
+    sandbox::Sandbox,
     traces::{
         utils::{get_llm_usage_for_span, record_span_to_db},
         OBSERVATIONS_EXCHANGE, OBSERVATIONS_ROUTING_KEY,
@@ -104,7 +104,7 @@ pub struct PipelineRunner {
     chunker_runner: Arc<ChunkerRunner>,
     semantic_search: Arc<dyn SemanticSearch>,
     rabbitmq_connection: Option<Arc<Connection>>,
-    code_executor: Arc<dyn PythonSandbox>,
+    sandbox: Arc<dyn Sandbox>,
     db: Arc<DB>,
     cache: Arc<Cache>,
 }
@@ -115,7 +115,7 @@ impl PipelineRunner {
         chunker_runner: Arc<ChunkerRunner>,
         semantic_search: Arc<dyn SemanticSearch>,
         rabbitmq_connection: Option<Arc<Connection>>,
-        code_executor: Arc<dyn PythonSandbox>,
+        sandbox: Arc<dyn Sandbox>,
         db: Arc<DB>,
         cache: Arc<Cache>,
     ) -> Self {
@@ -124,7 +124,7 @@ impl PipelineRunner {
             chunker_runner,
             semantic_search,
             rabbitmq_connection,
-            code_executor,
+            sandbox,
             db,
             cache,
         }
@@ -154,7 +154,7 @@ impl PipelineRunner {
             run_type: graph.run_type.clone(),
             pipeline_runner: self.clone(),
             baml_schemas: validated_schemas,
-            python_sandbox: self.code_executor.clone(),
+            sandbox: self.sandbox.clone(),
             db: self.db.clone(),
             cache: self.cache.clone(),
         };
@@ -199,7 +199,7 @@ impl PipelineRunner {
             run_type: graph.run_type.clone(),
             pipeline_runner: self.clone(),
             baml_schemas: validated_schemas,
-            python_sandbox: self.code_executor.clone(),
+            sandbox: self.sandbox.clone(),
             db: self.db.clone(),
             cache: self.cache.clone(),
         };
