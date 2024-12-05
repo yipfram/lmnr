@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import TraceView from './trace-view';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Resizable } from 're-resizable';
-import TracesTable from './traces-table';
-import { Tabs, TabsTrigger, TabsList, TabsContent } from '../ui/tabs';
-import SessionsTable from './sessions-table';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
+import { Resizable } from 're-resizable';
+import { useEffect, useState } from 'react';
+
 import { useUserContext } from '@/contexts/user-context';
 import { Feature, isFeatureEnabled } from '@/lib/features/features';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import SessionsTable from './sessions-table';
 import SpansTable from './spans-table';
+import TraceView from './trace-view';
+import TracesTable from './traces-table';
 
 enum SelectedTab {
   TRACES = 'traces',

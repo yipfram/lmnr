@@ -1,9 +1,10 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
 import { useState } from 'react';
+
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 
 interface EmailSignInProps {

@@ -1,3 +1,22 @@
+import { PopoverClose } from '@radix-ui/react-popover';
+import {
+  ChevronDown,
+  Loader2,
+  MoreVertical,
+  Plus,
+  Tag
+} from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import useSWR from 'swr';
+import { v4 } from 'uuid';
+
+import { useProjectContext } from '@/contexts/project-context';
+import { eventEmitter } from '@/lib/event-emitter';
+import { Graph } from '@/lib/flow/graph';
+import { CodeNode, LLMNode, NodeType } from '@/lib/flow/types';
+import { renderNodeInput } from '@/lib/flow/utils';
+import { toast } from '@/lib/hooks/use-toast';
 import {
   LabelClass,
   LabelSource,
@@ -5,43 +24,9 @@ import {
   Span,
 } from '@/lib/traces/types';
 import { cn, swrFetcher } from '@/lib/utils';
-import { useState } from 'react';
-import useSWR from 'swr';
-import {
-  ChevronDown,
-  Loader2,
-  MoreVertical,
-  Plus,
-  Tag,
-  X
-} from 'lucide-react';
-import { Button } from '../ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { useProjectContext } from '@/contexts/project-context';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '../ui/table';
-import { AddLabel } from './add-label';
-import { v4 } from 'uuid';
-import { renderNodeInput } from '@/lib/flow/utils';
-import { PopoverClose } from '@radix-ui/react-popover';
-import { toast, useToast } from '@/lib/hooks/use-toast';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '../ui/dropdown-menu';
+
 import { EvaluatorEditorDialog } from '../evaluator/evaluator-editor-dialog';
-import { Graph } from '@/lib/flow/graph';
-import { CodeNode, LLMNode, NodeType } from '@/lib/flow/types';
-import { Switch } from '../ui/switch';
-import { eventEmitter } from '@/lib/event-emitter';
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogContent,
@@ -51,6 +36,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '../ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Switch } from '../ui/switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '../ui/table';
+import { AddLabel } from './add-label';
 
 const getEvaluatorType = (labelClass: LabelClass) => {
   if (!labelClass.evaluatorRunnableGraph) {
@@ -174,7 +176,7 @@ export function AddLabelPopover({ span }: AddLabelPopoverProps) {
             <Tag size={14} className="mr-2" /> Add label
           </Button>
         </PopoverTrigger>
-        <PopoverContent side="bottom" align="end" className="min-w-[550px]">
+        <PopoverContent side="bottom" align="end" className="flex flex-col min-w-[550px]">
           <div className="flex-col items-center space-y-2">
             {mode === 'list' && (
               <>
@@ -369,6 +371,7 @@ function AddLabelInstance({
   onAddLabel: (value: string) => void;
 }) {
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
 
   const addLabel = async (
     value: string,
@@ -385,6 +388,18 @@ function AddLabelInstance({
       });
       return;
     }
+    const body = {
+      classId: labelClass.id,
+      value: labelClass.valueMap[value],
+      source,
+      reasoning,
+      scoreName: labelClass.name,
+      datapointId: null
+    } as Record<string, any>;
+
+    if (span.attributes['lmnr.span.type'] === 'EXECUTOR') {
+      body.datapointId = searchParams.get('datapointId');
+    }
 
     const response = await fetch(
       `/api/projects/${projectId}/spans/${span.spanId}/labels`,
@@ -393,12 +408,7 @@ function AddLabelInstance({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          classId: labelClass.id,
-          value: labelClass.valueMap[value],
-          source: source,
-          reasoning: reasoning
-        })
+        body: JSON.stringify(body)
       }
     );
 
@@ -510,18 +520,20 @@ function AddLabelInstance({
       <PopoverContent side="bottom" align="end">
         <div className="flex flex-col">
           <div className="flex flex-col space-y-2">
-            {Object.entries(labelClass.valueMap).map(([key, value], index) => (
-              <PopoverClose key={index}>
-                <div
-                  onClick={() => {
-                    addLabel(key, labelClass, LabelSource.MANUAL);
-                  }}
-                  className="cursor-pointer hover:bg-secondary-foreground/10 p-1 rounded border px-2"
-                >
-                  {key}
-                </div>
-              </PopoverClose>
-            ))}
+            {Object.entries(labelClass.valueMap)
+              .sort(([, valA], [_, valB]) => valA - valB)
+              .map(([key, value], index) => (
+                <PopoverClose key={index}>
+                  <div
+                    onClick={() => {
+                      addLabel(key, labelClass, LabelSource.MANUAL);
+                    }}
+                    className="cursor-pointer hover:bg-secondary-foreground/10 p-1 rounded border px-2"
+                  >
+                    {key}
+                  </div>
+                </PopoverClose>
+              ))}
           </div>
           {labelClass.evaluatorRunnableGraph && (
             <div className="flex border-t pt-2 mt-2">

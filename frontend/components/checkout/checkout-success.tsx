@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '../ui/button';
+
 import { LOOKUP_KEY_TO_TIER_NAME } from '@/lib/checkout/utils';
+
+import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 
 export interface CheckoutSuccessProps {

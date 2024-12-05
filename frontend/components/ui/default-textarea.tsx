@@ -2,6 +2,7 @@ import React from 'react';
 import TextareaAutosize, {
   type TextareaAutosizeProps
 } from 'react-textarea-autosize';
+
 import { cn } from '@/lib/utils';
 
 const DefaultTextarea = ({ className, ...props }: TextareaAutosizeProps) => (

@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { GenericNodeHandle, LLMNode, NodeHandleType } from '@/lib/flow/types';
-import { Label } from '@/components/ui/label';
-import LanguageModelSelect from './components/model-select';
-import useStore from '@/lib/flow/store';
-import TemplatedTextArea from './components/templated-text-area';
-import { Switch } from '@/components/ui/switch';
 import { v4 } from 'uuid';
+
 import Ide from '@/components/ui/ide';
-import StructuredOutputFields from './components/structured-output-fields';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import useStore from '@/lib/flow/store';
+import { GenericNodeHandle, LLMNode, NodeHandleType } from '@/lib/flow/types';
 import { PROVIDERS } from '@/lib/pipeline/types';
+
+import LanguageModelSelect from './components/model-select';
+import StructuredOutputFields from './components/structured-output-fields';
+import TemplatedTextArea from './components/templated-text-area';
 
 export default function LLM({
   data,

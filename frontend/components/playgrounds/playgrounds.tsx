@@ -1,24 +1,24 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { ColumnDef } from '@tanstack/react-table';
+import { Loader2, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import useSWR from 'swr';
+
+import { Button } from '@/components/ui/button';
+import { useProjectContext } from '@/contexts/project-context';
 import { useToast } from '@/lib/hooks/use-toast';
+import { Playground } from '@/lib/playground/types';
 import { swrFetcher } from '@/lib/utils';
 
-import { useProjectContext } from '@/contexts/project-context';
-import { useRouter } from 'next/navigation';
-import { Loader2, Trash2 } from 'lucide-react';
-import { ColumnDef } from '@tanstack/react-table';
-import { Dataset } from '@/lib/dataset/types';
-import useSWR from 'swr';
 import ClientTimestampFormatter from '../client-timestamp-formatter';
 import { DataTable } from '../ui/datatable';
-import Header from '../ui/header';
-import { TableCell, TableRow } from '../ui/table';
-import Mono from '../ui/mono';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import Header from '../ui/header';
+import Mono from '../ui/mono';
+import { TableCell, TableRow } from '../ui/table';
 import CreatePlaygroundDialog from './create-playground-dialog';
-import { Playground } from '@/lib/playground/types';
 
 export default function Playgrounds() {
   const { projectId } = useProjectContext();
@@ -113,7 +113,8 @@ export default function Playgrounds() {
                   <DialogHeader>
                     <DialogTitle>Delete Playgrounds</DialogTitle>
                     <DialogDescription>
-                      Are you sure you want to delete {selectedRowIds.length} playground(s)? This action cannot be undone.
+                      Are you sure you want to delete {selectedRowIds.length} playground(s)?
+                      This action cannot be undone.
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>

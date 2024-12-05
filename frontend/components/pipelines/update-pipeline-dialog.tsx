@@ -1,5 +1,8 @@
 'use client';
 
+import { Loader2, Pencil } from 'lucide-react';
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,13 +12,12 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { Label } from '@/components/ui/label';
 import { useProjectContext } from '@/contexts/project-context';
-import { Loader2, Pencil, Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Pipeline } from '@/lib/pipeline/types';
+import { cn } from '@/lib/utils';
+
 import { DropdownMenuItem } from '../ui/dropdown-menu';
 
 interface UpdatePipelineDialogProps {
@@ -73,10 +75,9 @@ export function UpdatePipelineDialog({
         </DialogTrigger>
         <DialogContent
           className="sm:max-w-[425px]"
-          aria-description="Edit pipeline"
         >
           <DialogHeader>
-            <DialogTitle>Edit pipeline {oldPipeline.name}</DialogTitle>
+            <DialogTitle>Rename pipeline</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <Label>Name</Label>

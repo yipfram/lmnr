@@ -1,4 +1,4 @@
-import { eq, and, gt, sql, lt, SQL, lte, ne, gte, BinaryOperator } from "drizzle-orm";
+import { BinaryOperator, eq, gt, gte, lt, lte, ne, SQL,sql } from "drizzle-orm";
 
 const filterOperators: Record<string, BinaryOperator> = {
   'eq': eq,

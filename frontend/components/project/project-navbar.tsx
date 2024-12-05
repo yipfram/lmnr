@@ -1,18 +1,19 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import {
   Cable,
   Database,
-  Gauge,
   LockKeyhole,
   Rocket,
   Rows4
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
+
 import logo from '@/assets/logo/laminar.svg';
+import { cn } from '@/lib/utils';
+
 import AvatarMenu from '../user/avatar-menu';
 
 interface ProjectNavBarProps {

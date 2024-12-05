@@ -1,12 +1,12 @@
-import { authOptions } from '@/lib/auth';
-import { getServerSession } from 'next-auth';
+import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
 
 import Projects from '@/components/projects/projects';
-import { UserContextProvider } from '@/contexts/user-context';
 import WorkspacesNavbar from '@/components/projects/workspaces-navbar';
-import { Metadata } from 'next';
 import Header from '@/components/ui/header';
+import { UserContextProvider } from '@/contexts/user-context';
+import { authOptions } from '@/lib/auth';
 import { Feature, isFeatureEnabled } from '@/lib/features/features';
 
 export const metadata: Metadata = {

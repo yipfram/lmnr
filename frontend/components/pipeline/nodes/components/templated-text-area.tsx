@@ -1,12 +1,11 @@
+import { useCallback, useRef } from 'react';
+import { IAceEditorProps } from 'react-ace';
+import { v4 } from 'uuid';
+
+import DefaultTextarea from '@/components/ui/default-textarea';
+import Ide from '@/components/ui/ide';
 import { Label } from '@/components/ui/label';
 import { GenericNodeHandle, NodeHandleType } from '@/lib/flow/types';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { v4 } from 'uuid';
-import { encodingForModel } from 'js-tiktoken';
-import Ide from '@/components/ui/ide';
-import { IAceEditorProps } from 'react-ace';
-import { cn } from '@/lib/utils';
-import DefaultTextarea from '@/components/ui/default-textarea';
 
 interface TemplatedTextAreaProps extends IAceEditorProps {
   defaultInputs: Map<string, GenericNodeHandle>;

@@ -1,7 +1,9 @@
-import EditableChatMessage from './editable-chat-message';
-import { Button } from './button';
-import { ChatMessage } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
+
+import { ChatMessage } from '@/lib/types';
+
+import { Button } from './button';
+import EditableChatMessage from './editable-chat-message';
 
 interface EditableChatProps {
   messages: ChatMessage[];

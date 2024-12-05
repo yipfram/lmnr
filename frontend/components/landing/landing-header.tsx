@@ -1,12 +1,14 @@
 'use client';
 
-import Link from 'next/link';
+import { Menu, X } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
 import logo from '@/assets/logo/logo.svg';
-import { useState, useEffect } from 'react';
-import { Menu, X, XCircle } from 'lucide-react';
-import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
+
+import { Button } from '../ui/button';
 
 interface LandingHeaderProps {
   hasSession: boolean;
@@ -24,12 +26,12 @@ export default function LandingHeader({ hasSession }: LandingHeaderProps) {
   }, []);
 
   const menuItemStyle =
-    'text-sm md:text-base font-medium px-2 md:px-2 py-2 md:py-1 transition-colors w-full text-left  whitespace-nowrap md:rounded-sm hover:bg-secondary';
+    'text-sm md:text-base font-medium px-2 md:px-2 py-2 md:py-1 transition-colors w-full text-left whitespace-nowrap md:rounded-sm hover:bg-secondary';
 
   return (
     <>
       <header className="flex flex-col md:flex-row w-full justify-between md:justify-center items-center fixed z-50 backdrop-blur-lg">
-        <div className="w-full px-8 md:px-0 flex flex-col md:flex-row md:w-[1000px] justify-between items-center">
+        <div className="w-full px-8 md:px-0 flex flex-col md:flex-row md:w-[1200px] justify-between items-center">
           <div className="flex justify-between w-full items-center h-20">
             <Link href="/">
               <Image alt="logo" src={logo} width={150} priority />
@@ -60,11 +62,14 @@ export default function LandingHeader({ hasSession }: LandingHeaderProps) {
             <Link href="/pricing" className={menuItemStyle}>
               Pricing
             </Link>
-            <Link target="_blank" href="https://github.com/lmnr-ai/lmnr" className={menuItemStyle}>
-              GitHub {starCount && `★ ${starCount}`}
+            <Link href="/blog" className={menuItemStyle}>
+              Blog
             </Link>
             <Link target="_blank" href="https://discord.gg/nNFUUDAKub" className={menuItemStyle}>
               Discord
+            </Link>
+            <Link target="_blank" href="https://github.com/lmnr-ai/lmnr" className={menuItemStyle}>
+              GitHub {starCount && `★ ${starCount}`}
             </Link>
             <Link target="_blank" href="https://cal.com/robert-lmnr/demo">
               <Button

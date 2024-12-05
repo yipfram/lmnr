@@ -1,6 +1,6 @@
+import { labelClasses } from '../db/migrations/schema';
 import { Event } from '../events/types';
 import { GraphMessagePreview } from '../pipeline/types';
-import { labelClasses } from '../db/migrations/schema';
 
 export type TraceMessages = { [key: string]: GraphMessagePreview };
 
@@ -61,7 +61,7 @@ export type Span = {
   name: string;
   startTime: string;
   endTime: string;
-  attributes: any;
+  attributes: Record<string, any>;
   input: any | null;
   output: any | null;
   inputPreview: string | null;

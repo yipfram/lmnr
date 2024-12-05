@@ -1,11 +1,13 @@
-import { AiOutlineMinusCircle } from 'react-icons/ai';
 import { useState } from 'react';
+import { AiOutlineMinusCircle } from 'react-icons/ai';
+
 import {
   ChatMessageContentPart,
   ChatMessageImage,
   ChatMessageImageUrl,
   ChatMessageText
 } from '@/lib/types';
+
 import DefaultTextarea from './default-textarea';
 import { Input } from './input';
 import {

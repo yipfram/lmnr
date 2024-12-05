@@ -1,12 +1,12 @@
-import { WorkspaceStats } from '@/lib/usage/types';
-import { Workspace } from '@/lib/workspaces/types';
-import { Progress } from '../ui/progress';
 import { Label } from '@radix-ui/react-label';
-import ClientTimestampFormatter from '../client-timestamp-formatter';
 import { useRouter } from 'next/navigation';
-import { Button } from '../ui/button';
-import PurchaseSeatsDialog from './purchase-seats-dialog';
+
+import { WorkspaceStats } from '@/lib/usage/types';
 import { cn } from '@/lib/utils';
+import { Workspace } from '@/lib/workspaces/types';
+
+import ClientTimestampFormatter from '../client-timestamp-formatter';
+import { Button } from '../ui/button';
 
 interface WorkspaceUsageProps {
   workspace: Workspace;

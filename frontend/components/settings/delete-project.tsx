@@ -1,6 +1,8 @@
 'use client';
 
-import { Button } from '../ui/button';
+import { Loader2, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+
 import {
   Dialog,
   DialogContent,
@@ -9,12 +11,12 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
-import { useState } from 'react';
 import { useProjectContext } from '@/contexts/project-context';
-import { Loader2, Trash, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 interface DeleteProjectProps { }
 

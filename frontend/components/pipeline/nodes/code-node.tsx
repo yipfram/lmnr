@@ -1,8 +1,10 @@
 import { memo } from 'react';
-import GenericNodeComponent from './generic-node';
-import { CodeNode } from '@/lib/flow/types';
-import useStore from '@/lib/flow/store';
 import { useUpdateNodeInternals } from 'reactflow';
+
+import useStore from '@/lib/flow/store';
+import { CodeNode } from '@/lib/flow/types';
+
+import GenericNodeComponent from './generic-node';
 
 const pythonFunctionPattern = /def\s+(\w+)\s*\(([^)]*)\)/;
 

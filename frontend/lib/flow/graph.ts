@@ -1,16 +1,18 @@
 import { v4 } from 'uuid';
-import {
-  type GenericNode,
-  NodeHandleType,
-  NodeType,
-  type OutputNode,
-  InputNode,
-  ConditionNode,
-  GenericNodeHandle
-} from './types';
+
 import { getRequiredEnvVars } from '@/lib/env/utils';
+
 import { GraphMessagePreview } from '../pipeline/types';
 import { TraceMessages } from '../traces/types';
+import {
+  ConditionNode,
+  type GenericNode,
+  GenericNodeHandle,
+  InputNode,
+  NodeHandleType,
+  NodeType,
+  type OutputNode
+} from './types';
 
 export class Graph {
   nodes: Map<string, GenericNode>;

@@ -1,20 +1,18 @@
 import { ColumnDef } from '@tanstack/react-table';
-import { DataTable } from '../ui/datatable';
-import { RunTrace, TracePreview } from '@/lib/traces/types';
-import ClientTimestampFormatter from '../client-timestamp-formatter';
-import useSWR from 'swr';
+import { useState } from 'react';
+
 import { useProjectContext } from '@/contexts/project-context';
-import { swrFetcher } from '@/lib/utils';
 import { PipelineVersion } from '@/lib/pipeline/types';
-import { use, useEffect, useState } from 'react';
-import { ChevronsRight } from 'lucide-react';
-import StatusLabel from '../ui/status-label';
+import { RunTrace, TracePreview } from '@/lib/traces/types';
+
+import ClientTimestampFormatter from '../client-timestamp-formatter';
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup
 } from '../ui/resizable';
 import { Skeleton } from '../ui/skeleton';
+import StatusLabel from '../ui/status-label';
 
 export const TRACE_COLUMNS: ColumnDef<RunTrace, any>[] = [
   {
@@ -79,9 +77,11 @@ export default function PipelineHistory({
   //   if (!selectedRunTrace) {
   //     return;
   //   }
-  //   fetch(`/api/projects/${projectId}/traces/trace/${selectedRunTrace?.runId}`).then((res) => res.json()).then((data) => {
-  //     setFullTrace(data)
-  //   })
+  //   fetch(`/api/projects/${projectId}/traces/trace/${selectedRunTrace?.runId}`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       setFullTrace(data)
+  //     })
   // }, [selectedRunTrace])
 
   // useEffect(() => {

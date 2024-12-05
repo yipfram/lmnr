@@ -1,8 +1,9 @@
-import { NodeHandleType, CodeSandboxNode } from '@/lib/flow/types';
-import useStore from '@/lib/flow/store';
-import { Label } from '@/components/ui/label';
 import { v4 } from 'uuid';
+
+import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import useStore from '@/lib/flow/store';
+import { CodeSandboxNode, NodeHandleType } from '@/lib/flow/types';
 
 export default function CodeSandboxNodeComponent({
   data

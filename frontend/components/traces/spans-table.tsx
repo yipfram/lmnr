@@ -1,25 +1,26 @@
 'use client';
-import { useProjectContext } from '@/contexts/project-context';
-import { LabelClass, Span } from '@/lib/traces/types';
 import { ColumnDef } from '@tanstack/react-table';
+import { ArrowRight, RefreshCcw } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+import { useProjectContext } from '@/contexts/project-context';
+import { Span } from '@/lib/traces/types';
+import { PaginatedResponse } from '@/lib/types';
+
 import ClientTimestampFormatter from '../client-timestamp-formatter';
-import DateRangeFilter from '../ui/date-range-filter';
+import { Button } from '../ui/button';
 import { DataTable } from '../ui/datatable';
 import DataTableFilter from '../ui/datatable-filter';
-import TextSearchFilter from '../ui/text-search-filter';
-import { Button } from '../ui/button';
-import { ArrowRight, RefreshCcw } from 'lucide-react';
-import { PaginatedResponse } from '@/lib/types';
+import DateRangeFilter from '../ui/date-range-filter';
 import Mono from '../ui/mono';
+import TextSearchFilter from '../ui/text-search-filter';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from '../ui/tooltip';
-import { EventTemplate } from '@/lib/events/types';
 import SpanTypeIcon from './span-type-icon';
 
 interface SpansTableProps {
@@ -154,12 +155,13 @@ export default function SpansTable({ onRowClick }: SpansTableProps) {
       accessorKey: 'name',
       header: 'Name',
       id: 'name',
+      size: 150
     },
     {
       accessorKey: 'path',
       header: 'Path',
       id: 'path',
-      size: 200
+      size: 150
     },
     {
       cell: (row) => row.getValue(),
@@ -306,46 +308,46 @@ export default function SpansTable({ onRowClick }: SpansTableProps) {
     }
   ];
 
-  const events: EventTemplate[] = [];
-  const labels: LabelClass[] = [];
-  const extraFilterCols = [
+
+  const filterColumns = [
     {
-      header: 'Input tokens',
-      id: 'input_token_count',
+      id: 'id',
+      name: 'ID'
     },
     {
-      header: 'Output tokens',
-      id: 'output_token_count',
+      id: 'trace_id',
+      name: 'Trace ID'
     },
     {
-      header: 'Input cost',
-      id: 'input_cost',
+      id: 'span_type',
+      name: 'Type'
     },
     {
-      header: 'Output cost',
-      id: 'output_cost',
+      id: 'name',
+      name: 'Name'
     },
+    {
+      id: 'path',
+      name: 'Path'
+    },
+    {
+      id: 'latency',
+      name: 'Latency'
+    },
+    {
+      id: 'tokens',
+      name: 'Tokens'
+    },
+    {
+      id: 'cost',
+      name: 'Cost'
+    },
+    {
+      id: 'labels',
+      name: 'Labels',
+      restrictOperators: ['eq'],
+    }
   ];
-
-  // const { data: events } = useSWR<EventTemplate[]>(
-  //   `/api/projects/${projectId}/event-templates`,
-  //   swrFetcher
-  // );
-  // const { data: labels } = useSWR<LabelClass[]>(
-  //   `/api/projects/${projectId}/label-classes`,
-  //   swrFetcher
-  // );
-
-  const customFilterColumns = {
-    event: events?.map((event) => event.name) ?? [],
-    label: labels?.map((label) => label.name) ?? []
-  };
-
-  const filterColumns = columns
-    .filter(
-      (column) => !['input', 'output', 'start_time'].includes(column.id!)
-    )
-    .concat(extraFilterCols);
 
   return (
     <DataTable
@@ -370,10 +372,9 @@ export default function SpansTable({ onRowClick }: SpansTableProps) {
       totalItemsCount={totalCount}
       enableRowSelection
     >
-      {/* <TextSearchFilter /> */}
+      <TextSearchFilter />
       <DataTableFilter
-        columns={filterColumns}
-        customFilterColumns={customFilterColumns}
+        possibleFilters={filterColumns}
       />
       <DateRangeFilter />
       <Button

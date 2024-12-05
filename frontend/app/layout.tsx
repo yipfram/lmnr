@@ -1,9 +1,12 @@
 import '@/app/globals.css';
-import { fontMono, fontSans, fontSans2 } from '@/lib/fonts';
-import { cn } from '@/lib/utils';
-import { Toaster } from '@/components/ui/toaster';
+
 import { Metadata } from 'next';
 import dynamic from 'next/dynamic';
+
+import { Toaster } from '@/components/ui/toaster';
+import { sans } from '@/lib/fonts';
+import { cn } from '@/lib/utils';
+
 import { PHProvider } from './providers';
 
 export const metadata: Metadata = {
@@ -21,15 +24,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className={cn('h-full antialiased', sans.variable)}>
       <PHProvider>
         <body
-          className={cn(
-            'flex flex-col h-full font-sans antialiased',
-            fontSans.variable,
-            fontSans2.variable,
-            fontMono.variable
-          )}
+          className="flex flex-col h-full"
         >
           <PostHogPageView />
           <div className="flex">

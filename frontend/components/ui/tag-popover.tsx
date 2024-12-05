@@ -1,9 +1,11 @@
 import React from 'react';
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger
 } from '@/components/ui/popover';
+
 import { type Tag as TagType } from './tag-input';
 import { TagList, TagListProps } from './tag-list';
 

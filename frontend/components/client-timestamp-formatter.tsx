@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+
 import {
-  TIME_MILLISECONDS_FORMAT,
   convertToLocalTimeWithMillis,
-  formatTimestamp
+  formatTimestamp,
+  TIME_MILLISECONDS_FORMAT
 } from '@/lib/utils';
 
 // This component is a client-side only component that will format a timestamp

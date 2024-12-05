@@ -1,3 +1,6 @@
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
+import useSWR from 'swr';
+
 import {
   ChartConfig,
   ChartContainer,
@@ -5,11 +8,10 @@ import {
   ChartTooltipContent
 } from '@/components/ui/chart';
 import { useProjectContext } from '@/contexts/project-context';
-import { cn, swrFetcher } from '@/lib/utils';
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
-import useSWR from 'swr';
-import { Skeleton } from '../ui/skeleton';
 import { BucketRow } from '@/lib/types';
+import { cn, swrFetcher } from '@/lib/utils';
+
+import { Skeleton } from '../ui/skeleton';
 
 const getTransformedData = (data: BucketRow[]) =>
   data.map((row: BucketRow, index: number) => ({

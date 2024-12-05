@@ -1,33 +1,32 @@
+import { GitCommitVertical, PanelLeft, PanelRight } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectLabel,
   SelectTrigger,
-  SelectValue,
-  SelectGroup
+  SelectValue
 } from '@/components/ui/select';
-import Link from 'next/link';
-import { GitCommitVertical, PanelLeft, PanelRight } from 'lucide-react';
+import PresenceUserImage from '@/components/user/presence-user-image';
+import { useProjectContext } from '@/contexts/project-context';
 import {
   Pipeline,
   PipelineVersion,
   PipelineVersionInfo
 } from '@/lib/pipeline/types';
-import { useProjectContext } from '@/contexts/project-context';
-import DeployButton from './deploy-button';
-import { cn } from '@/lib/utils';
-import CommitButton from './commit-button';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Skeleton } from '../ui/skeleton';
 import { PresenceUser } from '@/lib/user/types';
-import PresenceUserImage from '@/components/user/presence-user-image';
-import PipelineEnv from './pipeline-env';
-import OverwriteWorkshopButton from './overwrite-workshop-button';
+import { cn } from '@/lib/utils';
+
+import { Skeleton } from '../ui/skeleton';
+import CommitButton from './commit-button';
 import ForkButton from './fork-button';
-import UseApi from './use-api';
+import OverwriteWorkshopButton from './overwrite-workshop-button';
 import SetTargetVersionButton from './target-version';
+import UseApi from './use-api';
 
 const getWorkshopVersionId = (pipelineVersions: PipelineVersionInfo[]) =>
   pipelineVersions.filter((pv) => pv.pipelineType === 'WORKSHOP')[0].id;

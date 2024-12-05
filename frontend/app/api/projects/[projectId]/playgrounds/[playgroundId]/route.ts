@@ -1,7 +1,8 @@
-import { db } from "@/lib/db/drizzle";
-import { playgrounds } from "@/lib/db/migrations/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+
+import { db } from "@/lib/db/drizzle";
+import { playgrounds } from "@/lib/db/migrations/schema";
 
 const updatePlaygroundSchema = z.object({
   promptMessages: z.array(z.any()),

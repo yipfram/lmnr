@@ -1,16 +1,18 @@
 'use client';
 
-import React from 'react';
-import { Input } from './input';
-import { Button } from './button';
 import { type VariantProps } from 'class-variance-authority';
-import { CommandInput } from '@/components/ui/command';
-import { toast } from '../../lib/hooks/use-toast';
+import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { TagPopover } from './tag-popover';
-import { TagList } from './tag-list';
-import { tagVariants } from './tag';
+
+import { CommandInput } from '@/components/ui/command';
+
+import { toast } from '../../lib/hooks/use-toast';
 import { Autocomplete } from './auto-complete';
+import { Button } from './button';
+import { Input } from './input';
+import { tagVariants } from './tag';
+import { TagList } from './tag-list';
+import { TagPopover } from './tag-popover';
 
 export enum Delimiter {
   Comma = ',',

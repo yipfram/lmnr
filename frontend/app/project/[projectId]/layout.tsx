@@ -1,15 +1,17 @@
 import '@/app/globals.css';
+
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+
+import PostHogClient from '@/app/posthog';
 import ProjectNavbarCollapsed from '@/components/project/project-navbar-collapsed';
+import ProjectUsageBanner from '@/components/project/usage-banner';
 import { ProjectContextProvider } from '@/contexts/project-context';
 import { UserContextProvider } from '@/contexts/user-context';
 import { authOptions } from '@/lib/auth';
-import { fetcherJSON } from '@/lib/utils';
-import { getServerSession } from 'next-auth';
-import { redirect } from 'next/navigation';
-import PostHogClient from '@/app/posthog';
-import { GetProjectResponse } from '@/lib/workspaces/types';
-import ProjectUsageBanner from '@/components/project/usage-banner';
 import { Feature, isFeatureEnabled } from '@/lib/features/features';
+import { fetcherJSON } from '@/lib/utils';
+import { GetProjectResponse } from '@/lib/workspaces/types';
 
 export default async function ProjectIdLayout({
   params,

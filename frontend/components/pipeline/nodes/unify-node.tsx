@@ -1,17 +1,18 @@
 import { memo, useEffect, useState } from 'react';
-import GenericNodeComponent from './generic-node';
+import { v4 } from 'uuid';
+
+import IdeJson from '@/components/ui/ide-json';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import useStore from '@/lib/flow/store';
 import {
   GenericNodeHandle,
   NodeHandleType,
   type UnifyNode
 } from '@/lib/flow/types';
-import { Label } from '@/components/ui/label';
-import UnifyModelSelect from './components/unify-model-select';
-import useStore from '@/lib/flow/store';
+
 import TemplatedTextArea from './components/templated-text-area';
-import { Switch } from '@/components/ui/switch';
-import IdeJson from '@/components/ui/ide-json';
-import { v4 } from 'uuid';
+import UnifyModelSelect from './components/unify-model-select';
 
 const UnifyNodeComponent = ({ data }: { data: UnifyNode }) => {
   const [prompt, setSystemInstruction] = useState(data.prompt);

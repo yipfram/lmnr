@@ -1,16 +1,22 @@
 'use client';
-
-import {
-  Evaluation as EvaluationType,
-  EvaluationDatapointPreviewWithCompared,
-  EvaluationResultsInfo
-} from '@/lib/evaluation/types';
 import { ColumnDef } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
-import { DataTable } from '../ui/datatable';
-import { useProjectContext } from '@/contexts/project-context';
-import Header from '../ui/header';
+import { ArrowRight } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Resizable } from 're-resizable';
+import { useEffect, useState } from 'react';
+
+import { useProjectContext } from '@/contexts/project-context';
+import {
+  Evaluation as EvaluationType, EvaluationDatapointPreviewWithCompared, EvaluationResultsInfo
+} from '@/lib/evaluation/types';
+import { mergeOriginalWithComparedDatapoints } from '@/lib/evaluation/utils';
+import { useToast } from '@/lib/hooks/use-toast';
+
+import TraceView from '../traces/trace-view';
+import { Button } from '../ui/button';
+import { DataTable } from '../ui/datatable';
+import DownloadButton from '../ui/download-button';
+import Header from '../ui/header';
 import {
   Select,
   SelectContent,
@@ -18,16 +24,9 @@ import {
   SelectTrigger,
   SelectValue
 } from '../ui/select';
-import { mergeOriginalWithComparedDatapoints } from '@/lib/evaluation/utils';
-import { ArrowRight } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Resizable } from 're-resizable';
-import TraceView from '../traces/trace-view';
+import Chart from './chart';
 import CompareChart from './compare-chart';
 import ScoreCard from './score-card';
-import { useToast } from '@/lib/hooks/use-toast';
-import DownloadButton from '../ui/download-button';
-import Chart from './chart';
 
 const URL_QUERY_PARAMS = {
   COMPARE_EVAL_ID: 'comparedEvaluationId'

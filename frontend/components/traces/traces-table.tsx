@@ -1,32 +1,30 @@
-import { useProjectContext } from '@/contexts/project-context';
-import { useUserContext } from '@/contexts/user-context';
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/const';
-import { LabelClass, Trace } from '@/lib/traces/types';
 import { createClient } from '@supabase/supabase-js';
 import { ColumnDef } from '@tanstack/react-table';
+import { ArrowRight, RefreshCcw } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+import { useProjectContext } from '@/contexts/project-context';
+import { useUserContext } from '@/contexts/user-context';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/const';
+import { Feature, isFeatureEnabled } from '@/lib/features/features';
+import { Trace } from '@/lib/traces/types';
+import { PaginatedGetResponseWithProjectPresenceFlag } from '@/lib/types';
+
 import ClientTimestampFormatter from '../client-timestamp-formatter';
-import TracesPagePlaceholder from './page-placeholder';
-import { EventTemplate } from '@/lib/events/types';
-import DateRangeFilter from '../ui/date-range-filter';
+import { Button } from '../ui/button';
 import { DataTable } from '../ui/datatable';
 import DataTableFilter from '../ui/datatable-filter';
-import TextSearchFilter from '../ui/text-search-filter';
-import { Button } from '../ui/button';
-import { ArrowRight, RefreshCcw } from 'lucide-react';
-import { PaginatedGetResponseWithProjectPresenceFlag, PaginatedResponse } from '@/lib/types';
+import DateRangeFilter from '../ui/date-range-filter';
 import Mono from '../ui/mono';
-import useSWR from 'swr';
-import { swrFetcher } from '@/lib/utils';
+import TextSearchFilter from '../ui/text-search-filter';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from '../ui/tooltip';
-import { Feature } from '@/lib/features/features';
-import { isFeatureEnabled } from '@/lib/features/features';
+import TracesPagePlaceholder from './page-placeholder';
 import SpanTypeIcon from './span-type-icon';
 
 interface TracesTableProps {
@@ -277,48 +275,39 @@ export default function TracesTable({ onRowClick }: TracesTableProps) {
       </div>,
       size: 150
     },
+    {
+      accessorFn: (row) => row.metadata ? JSON.stringify(row.metadata, null, 2) : '',
+      header: 'Metadata',
+      id: 'metadata',
+      cell: (row) =>
+        <TooltipProvider delayDuration={100}>
+          <Tooltip>
+            <TooltipTrigger className="relative p-0">
+              <div
+                style={{
+                  width: row.column.getSize() - 32
+                }}
+                className="relative"
+              >
+                <div className="absolute inset-0 top-[-4px] items-center h-full flex">
+                  <div className="text-ellipsis overflow-hidden whitespace-nowrap">
+                    {row.getValue()}
+                  </div>
+                </div>
+              </div>
+            </TooltipTrigger>
+            {row.getValue() != undefined &&
+              <TooltipContent side="bottom" className="p-2 border">
+                <div className='whitespace-pre-wrap'>
+                  {row.getValue()}
+                </div>
+              </TooltipContent>
+            }
+          </Tooltip>
+        </TooltipProvider>,
+      size: 100
+    },
   ];
-
-  const extraFilterCols = [
-    {
-      header: 'Input tokens',
-      id: 'input_token_count',
-    },
-    {
-      header: 'Output tokens',
-      id: 'output_token_count',
-    },
-    {
-      header: 'Input cost',
-      id: 'input_cost',
-    },
-    {
-      header: 'Output cost',
-      id: 'output_cost',
-    },
-    // {
-    //   header: 'events',
-    //   id: `event`
-    // },
-    // {
-    //   header: 'labels',
-    //   id: `label`
-    // }
-  ];
-
-  const { data: events } = useSWR<EventTemplate[]>(
-    `/api/projects/${projectId}/event-templates`,
-    swrFetcher
-  );
-  const { data: labels } = useSWR<LabelClass[]>(
-    `/api/projects/${projectId}/label-classes`,
-    swrFetcher
-  );
-
-  const customFilterColumns = {
-    event: events?.map((event) => event.name) ?? [],
-    label: labels?.map((label) => label.name) ?? []
-  };
 
   const { supabaseAccessToken } = useUserContext();
 
@@ -390,11 +379,42 @@ export default function TracesTable({ onRowClick }: TracesTableProps) {
     return <TracesPagePlaceholder />;
   }
 
-  const filterColumns = columns
-    .filter(
-      (column) => !['start_time', 'events', 'input', 'output'].includes(column.id!)
-    )
-    .concat(extraFilterCols);
+  const filters = [
+    {
+      name: 'ID',
+      id: 'id',
+    },
+    {
+      name: 'Latency',
+      id: 'latency',
+    },
+    {
+      name: 'Top level span',
+      id: 'top_span_type',
+    },
+    {
+      name: 'Top span name',
+      id: 'top_span_name',
+    },
+    {
+      name: 'Input cost',
+      id: 'input_cost',
+    },
+    {
+      name: 'Output cost',
+      id: 'output_cost',
+    },
+    {
+      name: 'Metadata',
+      id: 'metadata',
+      restrictOperators: ['eq']
+    },
+    {
+      name: 'Labels',
+      id: 'labels',
+      restrictOperators: ['eq']
+    }
+  ];
 
   return (
     <DataTable
@@ -421,8 +441,7 @@ export default function TracesTable({ onRowClick }: TracesTableProps) {
     >
       <TextSearchFilter />
       <DataTableFilter
-        columns={filterColumns}
-        customFilterColumns={customFilterColumns}
+        possibleFilters={filters}
       />
       <DateRangeFilter />
       <Button

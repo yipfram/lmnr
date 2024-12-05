@@ -1,6 +1,6 @@
-import { useContext, useState } from 'react';
-import { ProjectContext } from '@/contexts/project-context';
 import { Loader2, MoreVertical, Trash2 } from 'lucide-react';
+import { useContext, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -8,21 +8,19 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger
+  DialogTitle
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { PipelineVersionInfo } from '@/lib/pipeline/types';
-import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ProjectContext } from '@/contexts/project-context';
+import { PipelineVersionInfo } from '@/lib/pipeline/types';
+import { cn } from '@/lib/utils';
 
 interface DeletePipelineVersionButtonProps {
   selectedPipelineVersion: PipelineVersionInfo;

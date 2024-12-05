@@ -1,7 +1,8 @@
+import { Activity, ArrowRight, Braces, Gauge, MessageCircleMore } from "lucide-react";
+
 import { SpanType } from "@/lib/traces/types";
 import { SPAN_TYPE_TO_COLOR } from "@/lib/traces/utils";
 import { cn } from "@/lib/utils";
-import { Activity, ArrowRight, Braces, Gauge, MessageCircleMore } from "lucide-react";
 
 interface SpanTypeIconProps {
   spanType: SpanType,

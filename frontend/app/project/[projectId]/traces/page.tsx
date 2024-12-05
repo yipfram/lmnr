@@ -1,10 +1,11 @@
-import TracesDashboard from '@/components/traces/traces';
+import { eq } from 'drizzle-orm';
 import { Metadata } from 'next';
-import Header from '@/components/ui/header';
-import { spans, traces } from '@/lib/db/migrations/schema';
-import { eq, inArray } from 'drizzle-orm';
-import { db } from '@/lib/db/drizzle';
+
 import TracesPagePlaceholder from '@/components/traces/page-placeholder';
+import TracesDashboard from '@/components/traces/traces';
+import Header from '@/components/ui/header';
+import { db } from '@/lib/db/drizzle';
+import { spans } from '@/lib/db/migrations/schema';
 
 export const metadata: Metadata = {
   title: 'Traces'

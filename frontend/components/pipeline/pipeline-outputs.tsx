@@ -1,33 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
-import useStore from '@/lib/flow/store';
-import { useProjectContext } from '@/contexts/project-context';
-import { useToast } from '../../lib/hooks/use-toast';
-import { useCallback } from 'react';
-import {
-  GRAPH_VALID,
-  validateGraph,
-  validateInputs
-} from '@/lib/pipeline/utils';
-import { getLocalDevSessions, getLocalEnvVars } from '@/lib/utils';
-import {
-  BreakpointChunk,
-  GraphMessage,
-  InputVariable,
-  NodeStreamChunk,
-  PipelineVersion
-} from '@/lib/pipeline/types';
-import { Graph } from '@/lib/flow/graph';
-import { NodeInput, NodeType } from '@/lib/flow/types';
 import {
   createParser,
   type ParsedEvent,
   type ReconnectInterval
 } from 'eventsource-parser';
-import StreamTrace from './stream-trace';
-import { filterRunRequiredEnvVars } from '@/lib/flow/utils';
-import { RunTrace } from '@/lib/traces/types';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
+
+import { useProjectContext } from '@/contexts/project-context';
+import useStore from '@/lib/flow/store';
+import { NodeInput, NodeType } from '@/lib/flow/types';
+import { filterRunRequiredEnvVars } from '@/lib/flow/utils';
 import eventEmitter from '@/lib/pipeline/eventEmitter';
+import {
+  BreakpointChunk,
+  GraphMessage,
+  NodeStreamChunk,
+  PipelineVersion
+} from '@/lib/pipeline/types';
+import {
+  GRAPH_VALID,
+  validateGraph,
+  validateInputs
+} from '@/lib/pipeline/utils';
+import { RunTrace } from '@/lib/traces/types';
+import { getLocalDevSessions, getLocalEnvVars } from '@/lib/utils';
+
+import { useToast } from '../../lib/hooks/use-toast';
+import StreamTrace from './stream-trace';
 
 export type StreamMessage = {
   id: string;
@@ -308,6 +307,7 @@ export default function PipelineOutputs({
 
     runId.current = v4();
     setRunTrace(undefined);
+    console.log(JSON.stringify(graph.toObject(), null, 2));
 
     const response = await fetch(
       `/api/projects/${projectId}/pipelines/run/graph`,

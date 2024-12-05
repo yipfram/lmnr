@@ -1,18 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { SpanCard } from './span-card';
-import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import { Span } from '@/lib/traces/types';
 import { ChevronsRight } from 'lucide-react';
-import { SpanView } from './span-view';
-import Timeline from './timeline';
-import { cn, swrFetcher } from '@/lib/utils';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '../ui/button';
-import Mono from '../ui/mono';
+import React, { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
+
 import { useProjectContext } from '@/contexts/project-context';
+import { Span } from '@/lib/traces/types';
+import { cn, swrFetcher } from '@/lib/utils';
+
+import { Button } from '../ui/button';
+import MonoWithCopy from '../ui/mono-with-copy';
+import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { Skeleton } from '../ui/skeleton';
+import { SpanCard } from './span-card';
+import { SpanView } from './span-view';
 import StatsShields from './stats-shields';
+import Timeline from './timeline';
 
 interface TraceViewProps {
   traceId: string;
@@ -149,7 +151,7 @@ export default function TraceView({ traceId, onClose }: TraceViewProps) {
           <ChevronsRight />
         </Button>
         <div>Trace</div>
-        <Mono className="text-secondary-foreground">{traceId}</Mono>
+        <MonoWithCopy className="text-secondary-foreground">{traceId}</MonoWithCopy>
         <div className="flex-grow" />
         <div>
           {selectedSpan && (

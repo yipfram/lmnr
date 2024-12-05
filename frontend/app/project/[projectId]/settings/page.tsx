@@ -1,9 +1,10 @@
+import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
+
+import Settings from '@/components/settings/settings';
 import { authOptions } from '@/lib/auth';
 import { fetcherJSON } from '@/lib/utils';
-import { redirect } from 'next/navigation';
-import { Metadata } from 'next';
-import Settings from '@/components/settings/settings';
 
 export const metadata: Metadata = {
   title: 'Settings'

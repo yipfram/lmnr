@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+
 import {
   ChartConfig,
   ChartContainer,
@@ -5,15 +8,15 @@ import {
   ChartTooltipContent
 } from '@/components/ui/chart';
 import { useProjectContext } from '@/contexts/project-context';
-import { cn } from '@/lib/utils';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { Skeleton } from '../ui/skeleton';
-import { useEffect } from 'react';
-import { useState } from 'react';
 import { BucketRow } from '@/lib/types';
-import { Label } from '../ui/label';
+import { cn } from '@/lib/utils';
 
-const getTransformedData = (data: {[scoreName: string]: BucketRow[]}): {index: number, [scoreName: string]: number}[] => {
+import { Label } from '../ui/label';
+import { Skeleton } from '../ui/skeleton';
+
+const getTransformedData = (
+  data: {[scoreName: string]: BucketRow[]}
+): {index: number, [scoreName: string]: number}[] => {
   const res: {[index: number]: {[scoreName: string]: number}} = {};
   for (const [scoreName, rows] of Object.entries(data)) {
     rows.forEach((row, index) => {

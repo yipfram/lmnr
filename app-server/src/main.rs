@@ -89,7 +89,7 @@ fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
 
     let general_runtime =
-        create_general_purpose_runtime().expect("Can't optimizer general purpose runtime.");
+        create_general_purpose_runtime().expect("Can't initialize general purpose runtime.");
     let runtime_handle = general_runtime.handle().clone();
 
     let mut handles: Vec<JoinHandle<Result<(), Error>>> = vec![];
@@ -394,12 +394,12 @@ fn main() -> anyhow::Result<()> {
                                 .wrap(project_auth.clone())
                                 .service(api::v1::pipelines::run_pipeline_graph)
                                 .service(api::v1::pipelines::ping_healthcheck)
-                                .service(api::v1::traces::get_events_for_session)
                                 .service(api::v1::traces::process_traces)
                                 .service(api::v1::datasets::get_datapoints)
                                 .service(api::v1::evaluations::create_evaluation)
                                 .service(api::v1::metrics::process_metrics)
                                 .service(api::v1::sandbox::run_code)
+                                .service(api::v1::semantic_search::semantic_search)
                                 .app_data(PayloadConfig::new(10 * 1024 * 1024)),
                         )
                         // Scopes with generic auth
@@ -489,10 +489,10 @@ fn main() -> anyhow::Result<()> {
                                         )
                                         .service(routes::datasets::delete_dataset)
                                         .service(routes::datasets::upload_datapoint_file)
-                                        .service(routes::datasets::create_datapoints)
+                                        .service(routes::datasets::create_datapoint_embeddings)
                                         .service(routes::datasets::get_datapoints)
-                                        .service(routes::datasets::update_datapoint_data)
-                                        .service(routes::datasets::delete_datapoints)
+                                        .service(routes::datasets::update_datapoint_embeddings)
+                                        .service(routes::datasets::delete_datapoint_embeddings)
                                         .service(routes::datasets::delete_all_datapoints)
                                         .service(routes::datasets::index_dataset)
                                         .service(routes::traces::get_traces)
@@ -509,12 +509,6 @@ fn main() -> anyhow::Result<()> {
                                             routes::labels::get_registered_label_classes_for_path,
                                         )
                                         .service(routes::labels::update_label_class)
-                                        .service(routes::events::get_event_templates)
-                                        .service(routes::events::get_event_template)
-                                        .service(routes::events::update_event_template)
-                                        .service(routes::events::delete_event_template)
-                                        .service(routes::events::get_events_by_template_id)
-                                        .service(routes::events::get_events_metrics)
                                         .service(routes::traces::get_traces_metrics)
                                         .service(routes::provider_api_keys::save_api_key),
                                 ),

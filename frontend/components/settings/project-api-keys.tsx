@@ -1,8 +1,6 @@
-import {
-  GenerateProjectApiKeyResponse,
-  ProjectApiKey
-} from '@/lib/api-keys/types';
-import { Button } from '../ui/button';
+import { Copy, Plus } from 'lucide-react';
+import { useCallback, useState } from 'react';
+
 import {
   Dialog,
   DialogContent,
@@ -11,14 +9,18 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { Copy, Plus } from 'lucide-react';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
-import { useCallback, useState } from 'react';
 import { useProjectContext } from '@/contexts/project-context';
+import {
+  GenerateProjectApiKeyResponse,
+  ProjectApiKey
+} from '@/lib/api-keys/types';
 import { useToast } from '@/lib/hooks/use-toast';
-import RevokeDialog from './revoke-dialog';
+
+import { Button } from '../ui/button';
 import CopyToClipboardButton from '../ui/copy-to-clipboard';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import RevokeDialog from './revoke-dialog';
 
 interface ApiKeysProps {
   apiKeys: ProjectApiKey[];

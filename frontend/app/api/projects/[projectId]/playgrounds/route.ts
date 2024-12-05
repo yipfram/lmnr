@@ -1,7 +1,7 @@
+import { eq } from 'drizzle-orm';
+
 import { db } from '@/lib/db/drizzle';
 import { playgrounds } from '@/lib/db/migrations/schema';
-
-import { eq } from 'drizzle-orm';
 
 export async function GET(req: Request, { params }: { params: { projectId: string } }) {
   const projectId = params.projectId;

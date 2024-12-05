@@ -1,10 +1,8 @@
+import { and, eq } from 'drizzle-orm';
+import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
-import { Metadata } from 'next';
 import Queue from '@/components/queue/queue';
-
-import * as schema from '@/lib/db/migrations/schema';
-import { and, eq } from 'drizzle-orm';
 import { db } from '@/lib/db/drizzle';
 import { labelingQueues } from '@/lib/db/migrations/schema';
 

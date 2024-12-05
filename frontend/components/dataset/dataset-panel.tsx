@@ -1,17 +1,20 @@
-import { useProjectContext } from '@/contexts/project-context';
 import { ChevronsRight, Loader2 } from 'lucide-react';
-import { Skeleton } from '../ui/skeleton';
-import { Label } from '../ui/label';
-import { ScrollArea } from '../ui/scroll-area';
-import { Button } from '../ui/button';
-import Mono from '../ui/mono';
-import { Datapoint } from '@/lib/dataset/types';
-import Formatter from '../ui/formatter';
 import { useEffect, useRef, useState } from 'react';
+
+import { useProjectContext } from '@/contexts/project-context';
+import { Datapoint } from '@/lib/dataset/types';
 import { useToast } from '@/lib/hooks/use-toast';
+
+import { Button } from '../ui/button';
+import Formatter from '../ui/formatter';
+import { Label } from '../ui/label';
+import MonoWithCopy from '../ui/mono-with-copy';
+import { ScrollArea } from '../ui/scroll-area';
+import { Skeleton } from '../ui/skeleton';
 
 interface DatasetPanelProps {
   datasetId: string;
+  indexedOn: string | null;
   datapoint: Datapoint;
   onClose: () => void;
 }
@@ -20,6 +23,7 @@ const AUTO_SAVE_TIMEOUT_MS = 750;
 
 export default function DatasetPanel({
   datasetId,
+  indexedOn,
   datapoint,
   onClose,
 }: DatasetPanelProps) {
@@ -57,7 +61,8 @@ export default function DatasetPanel({
         body: JSON.stringify({
           data: newData,
           target: newTarget,
-          metadata: newMetadata
+          metadata: newMetadata,
+          indexedOn
         })
       }
     );
@@ -106,7 +111,7 @@ export default function DatasetPanel({
           <ChevronsRight />
         </Button>
         <div>Row</div>
-        <Mono className="text-secondary-foreground mt-0.5">{datapoint.id}</Mono>
+        <MonoWithCopy className="text-secondary-foreground mt-0.5">{datapoint.id}</MonoWithCopy>
         {saving && <div className='flex text-secondary-foreground text-sm'>
           <Loader2 className="animate-spin h-4 w-4 mr-2 mt-0.5" />
           Saving

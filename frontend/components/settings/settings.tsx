@@ -1,9 +1,10 @@
 'use client';
 
 import { ProjectApiKey } from "@/lib/api-keys/types";
+
 import Header from "../ui/header";
-import ProjectApiKeys from "./project-api-keys";
 import DeleteProject from "./delete-project";
+import ProjectApiKeys from "./project-api-keys";
 import ProviderApiKeys from "./provider-api-keys";
 
 interface SettingsProps {

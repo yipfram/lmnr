@@ -1,9 +1,9 @@
-import { db } from '@/lib/db/drizzle';
 import { and, asc, eq, sql } from 'drizzle-orm';
+
+import { db } from '@/lib/db/drizzle';
 import {
   evaluationResults,
-  evaluations,
-  evaluationScores
+  evaluations,evaluationScores
 } from '@/lib/db/migrations/schema';
 
 export async function GET(

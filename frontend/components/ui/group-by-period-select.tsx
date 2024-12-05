@@ -1,4 +1,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
+
+import { getGroupByInterval, isGroupByIntervalAvailable } from '@/lib/utils';
+
 import {
   Select,
   SelectContent,
@@ -6,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue
 } from './select';
-import { getGroupByInterval, isGroupByIntervalAvailable } from '@/lib/utils';
 
 export function GroupByPeriodSelect() {
   const router = useRouter();

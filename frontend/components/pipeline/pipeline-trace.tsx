@@ -1,12 +1,9 @@
-import { Button } from '@/components/ui/button';
-import useStore from '@/lib/flow/store';
-import { InputNode, NodeHandleType, NodeType } from '@/lib/flow/types';
-import PipelineInput from './pipeline-input';
-import { ScrollArea } from '../ui/scroll-area';
 import { AiOutlineMinusCircle } from 'react-icons/ai';
-import { DEFAULT_INPUT_VALUE_FOR_HANDLE_TYPE } from '@/lib/flow/utils';
-import { v4 as uuidv4 } from 'uuid';
-import { PipelineExecutionMode } from '@/lib/pipeline/types';
+
+import useStore from '@/lib/flow/store';
+
+import { ScrollArea } from '../ui/scroll-area';
+import PipelineInput from './pipeline-input';
 
 interface PipelineTraceProps {}
 
@@ -58,7 +55,8 @@ export default function PipelineTrace({}: PipelineTraceProps) {
               let inputNodes
 
               if (mode === PipelineExecutionMode.Node && focusedNodeId) {
-                inputNodes = Array.from(getRunGraph().nodes.values()).filter(node => node.type === NodeType.INPUT) as InputNode[];
+                inputNodes = Array.from(getRunGraph().nodes.values())
+                  .filter(node => node.type === NodeType.INPUT) as InputNode[];
               } else {
                 // Private pipelines will only come here if they are not in Unit test mode
                 // Public pipelines don't have Unit test mode and will always come here

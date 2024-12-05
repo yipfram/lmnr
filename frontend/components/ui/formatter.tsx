@@ -1,3 +1,14 @@
+import { ChevronDown, ChevronUp, Copy, Maximize, Minimize } from 'lucide-react';
+import { useState } from 'react';
+import YAML from 'yaml';
+
+import { cn } from '@/lib/utils';
+
+import { Button } from './button';
+import CodeEditor from './code-editor';
+import CopyToClipboardButton from './copy-to-clipboard';
+import { DialogTitle } from './dialog';
+import { ScrollArea } from './scroll-area';
 import {
   Select,
   SelectContent,
@@ -5,17 +16,7 @@ import {
   SelectTrigger,
   SelectValue
 } from './select';
-import { useState } from 'react';
-import YAML from 'yaml';
-import { cn } from '@/lib/utils';
-import CodeEditor from './code-editor';
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from './sheet';
-import { Button } from './button';
-import { Maximize, Minimize, X, ChevronDown, ChevronUp, Copy } from 'lucide-react';
-import { ScrollArea } from './scroll-area';
-import { DialogTitle } from './dialog';
-import { useToast } from '@/lib/hooks/use-toast';
-import CopyToClipboardButton from './copy-to-clipboard';
 
 interface OutputFormatterProps {
   value: string;

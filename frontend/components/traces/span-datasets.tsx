@@ -1,21 +1,14 @@
-import { useProjectContext } from '@/contexts/project-context';
-import { cn, swrFetcher } from '@/lib/utils';
-import useSWR from 'swr';
-import { useEffect } from 'react';
-
-import { eventEmitter } from '@/lib/event-emitter';
-import { Table, TableBody, TableCell, TableRow } from '../ui/table';
-import { Skeleton } from '../ui/skeleton';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '../ui/tooltip';
-import ClientTimestampFormatter from '../client-timestamp-formatter';
-import { Button } from '../ui/button';
-import { ArrowUpRight, Info, X } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect } from 'react';
+import useSWR from 'swr';
+
+import { useProjectContext } from '@/contexts/project-context';
+import { eventEmitter } from '@/lib/event-emitter';
+import { cn, swrFetcher } from '@/lib/utils';
+
+import { Skeleton } from '../ui/skeleton';
+import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
 interface SpanDatasetsProps {
   spanId: string;
@@ -84,7 +77,7 @@ export default function SpanDatasets({ spanId }: SpanDatasetsProps) {
           </Table>
         ) : (
           <div className="p-2 text-secondary-foreground text-sm">
-            No labels
+            No datasets
           </div>
         )}
       </div>

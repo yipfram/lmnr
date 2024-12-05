@@ -1,16 +1,12 @@
-import { TIME_MILLISECONDS_FORMAT, swrFetcher } from '@/lib/utils';
-import useSWR from 'swr';
-import SpanEventsAddEvent from './span-events-add-event';
-import { Skeleton } from '../ui/skeleton';
-import { Span } from '@/lib/traces/types';
-import { useProjectContext } from '@/contexts/project-context';
-import Formatter from '../ui/formatter';
-import { useEffect, useState } from 'react';
-import { Event } from '@/lib/events/types';
-import { ScrollArea } from '../ui/scroll-area';
-import { DataTable } from '../ui/datatable';
 import { ColumnDef } from '@tanstack/react-table';
+import { useEffect, useState } from 'react';
+
+import { Event } from '@/lib/events/types';
+import { Span } from '@/lib/traces/types';
+import {TIME_MILLISECONDS_FORMAT } from '@/lib/utils';
+
 import ClientTimestampFormatter from '../client-timestamp-formatter';
+import { DataTable } from '../ui/datatable';
 
 interface TagsProps {
   span: Span;

@@ -1,5 +1,9 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,17 +13,15 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Info, Loader2, Plus } from 'lucide-react';
-import { cn, getLocalDevSessions, getLocalEnvVars } from '@/lib/utils';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import DatasetSelect from '../ui/dataset-select';
+import { Label } from '@/components/ui/label';
 import { useProjectContext } from '@/contexts/project-context';
+import { DisplayableGraph } from '@/lib/flow/types';
+import { cn, getLocalDevSessions, getLocalEnvVars } from '@/lib/utils';
+
+import DatasetSelect from '../ui/dataset-select';
 import PipelineSelect from '../ui/pipeline-select';
 import { Switch } from '../ui/switch';
-import { DisplayableGraph, GenericNode } from '@/lib/flow/types';
 
 export default function CreateEvaluationDialog() {
   const { projectId } = useProjectContext();
@@ -146,13 +148,17 @@ export default function CreateEvaluationDialog() {
                 {/* {executorInputNames != null && (
                   <div className='flex items-center'>
                     <Info size={11} className='text-secondary-foreground mx-1' />
-                    <Label className='text-secondary-foreground text-xs'>Executor input nodes: {executorInputNames.join(", ")}</Label>
+                    <Label className='text-secondary-foreground text-xs'>
+                      Executor input nodes: {executorInputNames.join(", ")}
+                    </Label>
                   </div>
                 )}
                 {executorOutputNames != null && (
                   <div className='flex items-center'>
                     <Info size={11} className='text-secondary-foreground mx-1' />
-                    <Label className='text-secondary-foreground text-xs'>Executor output nodes: {executorOutputNames.join(", ")}</Label>
+                    <Label className='text-secondary-foreground text-xs'>
+                      Executor output nodes: {executorOutputNames.join(", ")}
+                    </Label>
                   </div>
                 )} */}
               </div>
@@ -177,7 +183,9 @@ export default function CreateEvaluationDialog() {
             {/* {evaluatorInputNames && (
               <div className='flex items-center'>
                 <Info size={11} className='text-secondary-foreground mx-1' />
-                <Label className='text-secondary-foreground text-xs'>Evaluator input nodes: {evaluatorInputNames.join(", ")}</Label>
+                <Label className='text-secondary-foreground text-xs'>
+                  Evaluator input nodes: {evaluatorInputNames.join(", ")}
+                </Label>
               </div>
             )} */}
             <Label>Dataset</Label>

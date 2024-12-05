@@ -1,11 +1,12 @@
-import { ImperativePanelHandle } from 'react-resizable-panels';
 import { useState } from 'react';
-import { Maximize2, Minimize2 } from 'lucide-react';
-import PipelineOutputs from './pipeline-outputs';
+import { ImperativePanelHandle } from 'react-resizable-panels';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import PipelineHistory from './pipeline-history';
 import { PipelineVersion } from '@/lib/pipeline/types';
+
 import { Skeleton } from '../ui/skeleton';
+import PipelineHistory from './pipeline-history';
+import PipelineOutputs from './pipeline-outputs';
 
 interface PipelineBottomPanelProps {
   pipelineVersion: PipelineVersion;

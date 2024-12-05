@@ -1,6 +1,15 @@
-import { type DragEvent } from 'react';
-import { NodeType } from '@/lib/flow/types';
 import { GripVertical, LogIn } from 'lucide-react';
+import { type DragEvent } from 'react';
+
+import { NodeType } from '@/lib/flow/types';
+import { NODE_PREVIEWS, NODE_TYPE_TO_DOCS } from '@/lib/flow/utils';
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from '../ui/accordion';
 import {
   Tooltip,
   TooltipContent,
@@ -8,14 +17,6 @@ import {
   TooltipTrigger
 } from '../ui/tooltip';
 import NodePreviewComponent from './nodes/components/node-preview';
-import { NODE_TYPE_TO_DOCS } from '@/lib/flow/utils';
-import { NODE_PREVIEWS } from '@/lib/flow/utils';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger
-} from '../ui/accordion';
 
 export default function Toolbar({ editable }: { editable: boolean }) {
   const onDragStart = (

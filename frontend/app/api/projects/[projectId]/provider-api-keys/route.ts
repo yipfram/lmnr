@@ -1,12 +1,11 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { fetcher } from '@/lib/utils';
-import { NextRequest } from 'next/server';
-
-
-import { db } from '@/lib/db/drizzle';
 import { and, eq } from 'drizzle-orm';
+import { NextRequest } from 'next/server';
+import { getServerSession } from 'next-auth';
+
+import { authOptions } from '@/lib/auth';
+import { db } from '@/lib/db/drizzle';
 import { providerApiKeys } from '@/lib/db/migrations/schema';
+import { fetcher } from '@/lib/utils';
 export async function GET(req: NextRequest, { params }: { params: { projectId: string } }): Promise<Response> {
   const projectId = params.projectId;
 
@@ -44,7 +43,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { projectId
 
   const name = req.nextUrl.searchParams.get('name') ?? '';
 
-  const res = await db.delete(providerApiKeys).where(and(eq(providerApiKeys.name, name), eq(providerApiKeys.projectId, projectId))).returning();
+  const res = await db
+    .delete(providerApiKeys)
+    .where(and(eq(providerApiKeys.name, name), eq(providerApiKeys.projectId, projectId)))
+    .returning();
 
   if (res.length !== 1) {
     return new Response(JSON.stringify({ error: "Provider API key not found" }), { status: 400 });

@@ -1,19 +1,24 @@
 'use client';
 
-import { useProjectContext } from '@/contexts/project-context';
-import { Evaluation } from '@/lib/evaluation/types';
 import { ColumnDef } from '@tanstack/react-table';
-import ClientTimestampFormatter from '../client-timestamp-formatter';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DataTable } from '../ui/datatable';
-import Mono from '../ui/mono';
-import Header from '../ui/header';
 import { usePostHog } from 'posthog-js/react';
-import { useUserContext } from '@/contexts/user-context';
-import { Feature, isFeatureEnabled } from '@/lib/features/features';
-import { Button } from '../ui/button';
-import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import useSWR from 'swr';
+
+import { useProjectContext } from '@/contexts/project-context';
+import { useUserContext } from '@/contexts/user-context';
+import { AggregationFunction } from '@/lib/clickhouse/utils';
+import { Evaluation } from '@/lib/evaluation/types';
+import { Feature, isFeatureEnabled } from '@/lib/features/features';
+import { useToast } from '@/lib/hooks/use-toast';
+import { PaginatedResponse } from '@/lib/types';
+import { swrFetcher } from '@/lib/utils';
+
+import ClientTimestampFormatter from '../client-timestamp-formatter';
+import { Button } from '../ui/button';
+import { DataTable } from '../ui/datatable';
 import {
   Dialog,
   DialogContent,
@@ -23,16 +28,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
-import { useToast } from '@/lib/hooks/use-toast';
-import useSWR from 'swr';
-import { swrFetcher } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
-import { PaginatedResponse } from '@/lib/types';
+import Header from '../ui/header';
+import Mono from '../ui/mono';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import EvaluationsGroupsBar from './evaluations-groups-bar';
-import { Skeleton } from '../ui/skeleton';
 import ProgressionChart from './progression-chart';
-import { AggregationFunction } from '@/lib/clickhouse/utils';
-import { Select, SelectItem, SelectValue, SelectTrigger, SelectContent } from '../ui/select';
+
 
 export default function Evaluations() {
   const { projectId } = useProjectContext();

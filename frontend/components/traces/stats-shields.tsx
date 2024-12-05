@@ -1,14 +1,16 @@
-import { getDurationString } from '@/lib/flow/utils';
-import {
-  TooltipProvider,
-  TooltipTrigger,
-  TooltipContent,
-  Tooltip
-} from '@/components/ui/tooltip';
 import { TooltipPortal } from '@radix-ui/react-tooltip';
-import { Clock3, Coins, InfoIcon, CircleDollarSign } from 'lucide-react';
-import { Label } from '../ui/label';
+import { CircleDollarSign, Clock3, Coins, InfoIcon } from 'lucide-react';
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
+import { getDurationString } from '@/lib/flow/utils';
 import { cn } from '@/lib/utils';
+
+import { Label } from '../ui/label';
 
 interface StatsShieldsProps {
   startTime: string;

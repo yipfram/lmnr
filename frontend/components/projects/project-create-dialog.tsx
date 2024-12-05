@@ -1,6 +1,7 @@
-import { Project, WorkspaceWithProjects } from '@/lib/workspaces/types';
+import { Loader2, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
+
 import {
   Dialog,
   DialogContent,
@@ -11,16 +12,17 @@ import {
 } from '@/components/ui/dialog';
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
-  SelectItem
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
-import { Button } from '../ui/button';
-import { Loader2, Plus } from 'lucide-react';
-import { Label } from '../ui/label';
-import { Input } from '../ui/input';
 import { useToast } from '@/lib/hooks/use-toast';
+import { Project, WorkspaceWithProjects } from '@/lib/workspaces/types';
+
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 interface ProjectCreateDialogProps {
   onProjectCreate?: () => void;

@@ -1,57 +1,58 @@
 'use client';
+import { createClient } from '@supabase/supabase-js';
+import { ChevronsRight, PlayIcon, StopCircle } from 'lucide-react';
+import { usePostHog } from 'posthog-js/react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { ImperativePanelHandle } from 'react-resizable-panels';
+import { v4 as uuidv4 } from 'uuid';
+import * as Y from 'yjs';
 
-import { useContext, useEffect, useState, useRef, useMemo } from 'react';
-import Flow from './flow';
-import PipelineTrace from './pipeline-trace';
-import PipelineHeader from './pipeline-header';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup
+} from '@/components/ui/resizable';
+import { FlowContextProvider } from '@/contexts/pipeline-version-context';
 import { ProjectContext } from '@/contexts/project-context';
+import { useUserContext } from '@/contexts/user-context';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/const';
+import { Feature, isFeatureEnabled } from '@/lib/features/features';
+import { Graph } from '@/lib/flow/graph';
 import useStore from '@/lib/flow/store';
-import { Label } from '../ui/label';
+import { InputNode, NodeType } from '@/lib/flow/types';
+import { DEFAULT_INPUT_VALUE_FOR_HANDLE_TYPE } from '@/lib/flow/utils';
+import { usePrevious } from '@/lib/hooks/use-previous';
+import { useToast } from '@/lib/hooks/use-toast';
+import eventEmitter from '@/lib/pipeline/eventEmitter';
 import {
   InputVariable,
   Pipeline as PipelineType,
   PipelineExecutionMode,
   PipelineVersion
 } from '@/lib/pipeline/types';
-import { FlowContextProvider } from '@/contexts/pipeline-version-context';
+import { removeHashFromId } from '@/lib/pipeline/utils';
+import { PresenceUser } from '@/lib/user/types';
 import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup
-} from '@/components/ui/resizable';
-import { ImperativePanelHandle } from 'react-resizable-panels';
-import { useToast } from '@/lib/hooks/use-toast';
-import Toolbar from './pipeline-toolbar';
-import {
-  STORED_INPUTS_STATE_UNSEEN,
   cn,
   convertAllStoredInputsToUnseen,
   convertStoredInputToUnseen,
   getStoredInputs,
-  setStoredInputs
+  setStoredInputs,
+  STORED_INPUTS_STATE_UNSEEN
 } from '@/lib/utils';
-import { Graph } from '@/lib/flow/graph';
-import { createClient } from '@supabase/supabase-js';
-import { useUserContext } from '@/contexts/user-context';
-import { Skeleton } from '../ui/skeleton';
-import PipelineBottomPanel from './pipeline-bottom-panel';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/const';
-import { PresenceUser } from '@/lib/user/types';
-import { v4 as uuidv4 } from 'uuid';
-import PipelineSheet from './pipeline-sheet';
-import { InputNode, NodeType } from '@/lib/flow/types';
-import { DEFAULT_INPUT_VALUE_FOR_HANDLE_TYPE } from '@/lib/flow/utils';
+
 import { Button } from '../ui/button';
-import { ChevronsRight, PlayIcon, StopCircle } from 'lucide-react';
-import { removeHashFromId } from '@/lib/pipeline/utils';
-import { ScrollArea } from '../ui/scroll-area';
-import { usePrevious } from '@/lib/hooks/use-previous';
 import Header from '../ui/header';
+import { Label } from '../ui/label';
+import { ScrollArea } from '../ui/scroll-area';
+import { Skeleton } from '../ui/skeleton';
 import { Switch } from '../ui/switch';
-import * as Y from 'yjs';
-import eventEmitter from '@/lib/pipeline/eventEmitter';
-import { usePostHog } from 'posthog-js/react';
-import { Feature, isFeatureEnabled } from '@/lib/features/features';
+import Flow from './flow';
+import PipelineBottomPanel from './pipeline-bottom-panel';
+import PipelineHeader from './pipeline-header';
+import PipelineSheet from './pipeline-sheet';
+import Toolbar from './pipeline-toolbar';
+import PipelineTrace from './pipeline-trace';
 
 interface PipelineProps {
   pipeline: PipelineType;
@@ -439,7 +440,8 @@ export default function Pipeline({ pipeline, isSupabaseEnabled }: PipelineProps)
   useEffect(() => {
     if (!selectedPipelineVersion) return;
 
-    // The node may be focused, but if we're not in Node execution mode, we're still working with whole pipeline's inputs.
+    // The node may be focused, but if we're not in Node execution mode,
+    // we're still working with whole pipeline's inputs.
     let storeFocusedNodeId =
       mode === PipelineExecutionMode.Node ? focusedNodeId : null;
     setStoredInputs(selectedPipelineVersion.id!, storeFocusedNodeId, allInputs);

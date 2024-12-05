@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import {
   Select,
   SelectContent,
@@ -5,7 +7,6 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { useEffect, useState } from 'react';
 import { useProjectContext } from '@/contexts/project-context';
 import { Dataset } from '@/lib/dataset/types';
 import { PaginatedResponse } from '@/lib/types';
@@ -13,11 +14,13 @@ import { PaginatedResponse } from '@/lib/types';
 interface DatasetSelectProps {
   onDatasetChange: (dataset: Dataset) => void;
   selectedDatasetId?: string;
+  onlyShowIndexed?: boolean;
 }
 
 export default function DatasetSelect({
   onDatasetChange,
-  selectedDatasetId
+  selectedDatasetId,
+  onlyShowIndexed
 }: DatasetSelectProps) {
   const { projectId } = useProjectContext();
   const [datasets, setDatasets] = useState<Dataset[]>([]);
@@ -26,7 +29,7 @@ export default function DatasetSelect({
     fetch(`/api/projects/${projectId}/datasets`)
       .then((res) => res.json())
       .then((datasets: PaginatedResponse<Dataset>) => {
-        setDatasets(datasets.items);
+        setDatasets(onlyShowIndexed ? datasets.items.filter(dataset => dataset.indexedOn != null) : datasets.items);
       });
   }, []);
 

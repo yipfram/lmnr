@@ -1,8 +1,8 @@
 'use client';
 
-import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -23,7 +23,7 @@ const buttonVariants = cva(
       },
       size: {
         default: 'h-7 px-3',
-        sm: 'h-8 rounded-md px-3 text-xs',
+        sm: 'h-6 rounded-md px-2 text-xs',
         lg: 'h-10 rounded-md px-8',
         icon: 'h-9 w-9'
       }

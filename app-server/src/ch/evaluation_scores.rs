@@ -217,7 +217,7 @@ SELECT
     SUM(CASE
         -- exclusive on upper bound to avoid counting the same value twice
         WHEN (value >= intervals.lower_bound AND value < intervals.upper_bound)
-            OR value = ? THEN 1
+            OR (value = ? AND intervals.interval_num = ?) THEN 1
         ELSE 0
     END) AS height
 FROM evaluation_scores
@@ -236,6 +236,7 @@ ORDER BY intervals.interval_num",
         .bind(lower_bound)
         .bind(step_size)
         .bind(upper_bound)
+        .bind(bucket_count)
         .bind(project_id)
         .bind(evaluation_id)
         .bind(name)
@@ -275,4 +276,27 @@ WHERE project_id = ?
         .await?;
 
     Ok(row)
+}
+
+pub async fn delete_evaluation_score(
+    clickhouse: clickhouse::Client,
+    project_id: Uuid,
+    result_id: Uuid,
+    label_id: Uuid,
+) -> Result<()> {
+    if !is_feature_enabled(Feature::FullBuild) {
+        return Ok(());
+    }
+    // Note, this does not immediately physically delete the data.
+    // https://clickhouse.com/docs/en/sql-reference/statements/delete
+    clickhouse
+        .query(
+            "DELETE FROM evaluation_scores WHERE project_id = ? AND result_id = ? AND label_id = ?",
+        )
+        .bind(project_id)
+        .bind(result_id)
+        .bind(label_id)
+        .execute()
+        .await?;
+    Ok(())
 }

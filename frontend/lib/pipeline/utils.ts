@@ -1,4 +1,5 @@
 import { Edge } from 'reactflow';
+
 import { Graph } from '../flow/graph';
 import {
   GenericNode,
@@ -9,8 +10,8 @@ import {
   SubpipelineNode
 } from '../flow/types';
 import { ChatMessage } from '../types';
-import { InputVariable, PipelineVersion } from './types';
 import { isStringType } from '../utils';
+import { InputVariable, PipelineVersion } from './types';
 
 export const PUBLIC_PIPELINE_PROJECT_ID = 'PUBLIC-PIPELINE';
 export const PUBLIC_PIPELINE_PROJECT_NAME = 'Public pipeline';

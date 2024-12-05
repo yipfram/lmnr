@@ -1,4 +1,10 @@
+import { Loader2, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+
 import { ProjectApiKey } from '@/lib/api-keys/types';
+import { cn } from '@/lib/utils';
+
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,11 +13,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '../ui/dialog';
-import { useState } from 'react';
-import { Button } from '../ui/button';
-import { Loader2, Trash2 } from 'lucide-react';
 import { Label } from '../ui/label';
-import { cn } from '@/lib/utils';
 
 interface RevokeApiKeyDialogProps {
   apiKey: ProjectApiKey;

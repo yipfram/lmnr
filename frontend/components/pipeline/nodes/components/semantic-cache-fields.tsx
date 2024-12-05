@@ -1,17 +1,16 @@
-import { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
+
+import DatasetSelect from '@/components/ui/dataset-select';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { AlertTriangle } from 'lucide-react';
-import DatasetSelect from '@/components/ui/dataset-select';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip';
-import { SemanticCacheConfig } from '@/lib/semantic-cache/types';
-import { Input } from '@/components/ui/input';
 import useStore from '@/lib/flow/store';
 import { LLMNode } from '@/lib/flow/types';
 

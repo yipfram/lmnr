@@ -1,10 +1,12 @@
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Input } from './input';
-import { SyntheticEvent, useEffect, useState } from 'react';
-import { usePostHog } from 'posthog-js/react';
 import { Search, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePostHog } from 'posthog-js/react';
+import { SyntheticEvent, useEffect, useState } from 'react';
+
 import { Feature, isFeatureEnabled } from '@/lib/features/features';
+import { cn } from '@/lib/utils';
+
+import { Input } from './input';
 
 export default function TextSearchFilter() {
   const searchParams = new URLSearchParams(useSearchParams().toString());
@@ -45,7 +47,7 @@ export default function TextSearchFilter() {
     <div
       className={cn(
         'flex align-middle items-center space-x-1 border px-2 rounded-md h-8',
-        inputFocused && 'ring-2'
+        inputFocused && 'ring-1'
       )}
     >
       <Search size={18} className="text-secondary-foreground flex-grow" />
@@ -54,7 +56,7 @@ export default function TextSearchFilter() {
         onBlur={() => setInputFocused(false)}
         placeholder="Search"
         type="text"
-        className="max-h-8 border-none focus-visible:ring-0"
+        className="max-h-4 border-none focus-visible:ring-0"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         onKeyDown={handleKeyPress}
