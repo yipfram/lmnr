@@ -11,6 +11,7 @@ import { Span, Trace } from "@/lib/traces/types";
 import { cn } from "@/lib/utils";
 
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../../ui/resizable";
+import { ScrollArea, ScrollBar } from "../../ui/scroll-area";
 import SessionPlayer, { SessionPlayerHandle } from "../session-player";
 import { SpanView } from "../span-view";
 import Timeline from "../timeline";
@@ -188,7 +189,7 @@ export default function TraceView({ traceId, onClose, propsTrace, fullScreen = f
     if (selectedSpan) {
       setSelectedSpan(selectedSpan);
     }
-  }, [searchParams, setSelectedSpan, spans]);
+  }, [searchParams, spans]);
 
   useEffect(() => {
     if (!container.current) {
@@ -225,7 +226,25 @@ export default function TraceView({ traceId, onClose, propsTrace, fullScreen = f
     });
   }, [containerWidth, selectedSpan]);
 
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [treeViewWidth, setTreeViewWidth] = useState(() => {
+    try {
+      if (typeof window !== "undefined") {
+        const savedWidth = localStorage.getItem("trace-view:tree-view-width");
+        return savedWidth ? parseInt(savedWidth, 10) : 384;
+      }
+      return 384;
+    } catch (e) {
+      return 384;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("trace-view:tree-view-width", treeViewWidth.toString());
+      }
+    } catch (e) {}
+  }, [treeViewWidth]);
 
   return (
     <div className="flex flex-col h-full w-full overflow-clip">
@@ -240,45 +259,89 @@ export default function TraceView({ traceId, onClose, propsTrace, fullScreen = f
         )}
         {trace && !isTraceLoading && spans?.length > 0 && (
           <ResizablePanelGroup direction="vertical">
-            <ResizablePanel className="h-full w-full relative">
-              <div className="h-full w-full relative" ref={container}>
-                <div className="absolute inset-0 overflow-auto" ref={scrollAreaRef}>
-                  <div className="min-w-full min-h-full inline-flex">
-                    <ResizablePanelGroup className="h-full" direction="horizontal">
-                      <ResizablePanel
-                        className={cn("h-full w-full", { "overflow-auto": selectedSpan })}
-                        defaultSize={30}
-                        minSize={20}
+            <ResizablePanel>
+              <div className="flex h-full w-full relative" ref={container}>
+                <ScrollArea
+                  className="overflow-auto w-1 flex-grow"
+                  style={{
+                    width: timelineWidth,
+                    height: containerHeight,
+                  }}
+                >
+                  <table className="w-full h-full">
+                    <tbody className="w-full">
+                      <tr
+                        className="flex"
+                        style={{
+                          minHeight: containerHeight,
+                        }}
                       >
-                        <TreeView
-                          scrollRef={scrollAreaRef}
-                          refetchSpans={fetchSpans}
-                          isLoading={isLoading}
-                          timelineWidth={timelineWidth}
-                          setTimelineWidth={setTimelineWidth}
-                          browserSessionRef={browserSessionRef}
-                          ref={traceTreePanel}
-                        />
-                      </ResizablePanel>
-                      <ResizableHandle className="focus:bg-blue-600" withHandle />
-                      <ResizablePanel defaultSize={70}>
-                        {!selectedSpan ? (
-                          <Timeline
-                            scrollRef={scrollAreaRef}
-                            spans={spans}
-                            childSpans={childSpans}
-                            collapsedSpans={collapsedSpans}
-                            browserSessionTime={browserSessionTime}
+                        <td
+                          className={cn(
+                            "p-0 border-r left-0 bg-background flex-none",
+                            !selectedSpan ? "sticky z-50" : ""
+                          )}
+                          style={{
+                            width: treeViewWidth,
+                            maxWidth: treeViewWidth,
+                            position: "relative",
+                          }}
+                        >
+                          <TreeView
+                            refetchSpans={fetchSpans}
+                            isLoading={isLoading}
+                            timelineWidth={timelineWidth}
+                            setTimelineWidth={setTimelineWidth}
+                            browserSessionRef={browserSessionRef}
+                            ref={traceTreePanel}
                           />
-                        ) : (
-                          <div className="h-full overflow-auto">
-                            <SpanView key={selectedSpan.spanId} spanId={selectedSpan.spanId} />
-                          </div>
+                          {!selectedSpan && (
+                            <div
+                              className="absolute top-0 right-0 h-full w-1 bg-border z-50 cursor-col-resize hover:bg-blue-400 transition-colors"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                const startX = e.clientX;
+                                const startWidth = treeViewWidth;
+
+                                const handleMouseMove = (moveEvent: MouseEvent) => {
+                                  const newWidth = Math.max(
+                                    200,
+                                    Math.min(containerWidth / 2, startWidth + moveEvent.clientX - startX)
+                                  );
+                                  setTreeViewWidth(newWidth);
+                                };
+
+                                const handleMouseUp = () => {
+                                  document.removeEventListener("mousemove", handleMouseMove);
+                                  document.removeEventListener("mouseup", handleMouseUp);
+                                };
+
+                                document.addEventListener("mousemove", handleMouseMove);
+                                document.addEventListener("mouseup", handleMouseUp);
+                              }}
+                            />
+                          )}
+                        </td>
+                        {!selectedSpan && (
+                          <td className="flex flex-grow w-full p-0 relative">
+                            <Timeline
+                              spans={spans}
+                              childSpans={childSpans}
+                              collapsedSpans={collapsedSpans}
+                              browserSessionTime={browserSessionTime}
+                            />
+                          </td>
                         )}
-                      </ResizablePanel>
-                    </ResizablePanelGroup>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+                {selectedSpan && (
+                  <div style={{ width: containerWidth - timelineWidth }}>
+                    <SpanView key={selectedSpan.spanId} spanId={selectedSpan.spanId} />
                   </div>
-                </div>
+                )}
               </div>
             </ResizablePanel>
             {showBrowserSession && <ResizableHandle withHandle />}

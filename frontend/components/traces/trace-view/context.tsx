@@ -1,5 +1,14 @@
 import { useSearchParams } from "next/navigation";
-import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  Dispatch,
+  PropsWithChildren,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { organizeSpansHierarchy } from "@/components/traces/trace-view/utils";
 import { Span, Trace } from "@/lib/traces/types";
@@ -50,9 +59,16 @@ export const TraceViewContextProvider = ({ children }: PropsWithChildren<{ props
   const [collapsedSpans, setCollapsedSpans] = useState<Set<string>>(new Set());
   const [activeSpans, setActiveSpans] = useState<string[]>([]);
 
+  const [topLevelSpans, setTopLevelSpans] = useState<Span[]>([]);
+  const [childSpans, setChildSpans] = useState<{ [key: string]: Span[] }>({});
   const [showBrowserSession, setShowBrowserSession] = useState(false);
 
-  const { childSpans, topLevelSpans } = useMemo(() => organizeSpansHierarchy(spans), [spans]);
+  useEffect(() => {
+    const { childSpans, topLevelSpans } = organizeSpansHierarchy(spans);
+
+    setChildSpans(childSpans);
+    setTopLevelSpans(topLevelSpans);
+  }, [spans]);
 
   const value = useMemo<TraceViewContextType>(
     () => ({
