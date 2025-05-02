@@ -1,23 +1,24 @@
-'use client';
+"use client";
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { usePostHog } from 'posthog-js/react';
-import { Resizable } from 're-resizable';
-import { useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePostHog } from "posthog-js/react";
+import { Resizable } from "re-resizable";
+import React, { useEffect, useState } from "react";
 
-import { useUserContext } from '@/contexts/user-context';
-import { Feature, isFeatureEnabled } from '@/lib/features/features';
+import { TraceViewContextProvider } from "@/components/traces/trace-view/context";
+import { useUserContext } from "@/contexts/user-context";
+import { Feature, isFeatureEnabled } from "@/lib/features/features";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import SessionsTable from './sessions-table';
-import SpansTable from './spans-table';
-import TraceView from './trace-view';
-import TracesTable from './traces-table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import SessionsTable from "./sessions-table";
+import SpansTable from "./spans-table";
+import TraceView from "./trace-view";
+import TracesTable from "./traces-table";
 
 enum SelectedTab {
-  TRACES = 'traces',
-  SESSIONS = 'sessions',
-  SPANS = 'spans'
+  TRACES = "traces",
+  SESSIONS = "sessions",
+  SPANS = "spans",
 }
 
 export default function Traces() {
@@ -26,14 +27,14 @@ export default function Traces() {
   const router = useRouter();
   const { email } = useUserContext();
   const posthog = usePostHog();
-  const selectedView = searchParams.get('view') ?? SelectedTab.TRACES;
+  const selectedView = searchParams.get("view") ?? SelectedTab.TRACES;
 
   const resetUrlParams = (newView: string) => {
-    searchParams.delete('filter');
-    searchParams.delete('textSearch');
-    searchParams.delete('traceId');
-    searchParams.delete('spanId');
-    searchParams.set('view', newView);
+    searchParams.delete("filter");
+    searchParams.delete("textSearch");
+    searchParams.delete("traceId");
+    searchParams.delete("spanId");
+    searchParams.set("view", newView);
     setIsSidePanelOpen(false);
     setTraceId(null);
     router.push(`${pathName}?${searchParams.toString()}`);
@@ -43,12 +44,8 @@ export default function Traces() {
     posthog.identify(email);
   }
 
-  const [traceId, setTraceId] = useState<string | null>(
-    searchParams.get('traceId') ?? null
-  );
-  const [isSidePanelOpen, setIsSidePanelOpen] = useState<boolean>(
-    traceId != null
-  );
+  const [traceId, setTraceId] = useState<string | null>(searchParams.get("traceId") ?? null);
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState<boolean>(traceId != null);
 
   useEffect(() => {
     setIsSidePanelOpen(traceId != null);
@@ -57,22 +54,12 @@ export default function Traces() {
   return (
     <div className="flex flex-col h-full flex-grow">
       <div className="flex-grow flex">
-        <Tabs
-          value={selectedView}
-          className="flex flex-col w-full"
-          onValueChange={value => resetUrlParams(value)}
-        >
+        <Tabs value={selectedView} className="flex flex-col w-full" onValueChange={(value) => resetUrlParams(value)}>
           <div className="flex-none">
             <TabsList className="w-full flex px-4 border-b">
-              <TabsTrigger value="traces">
-                Traces
-              </TabsTrigger>
-              <TabsTrigger value="spans">
-                Spans
-              </TabsTrigger>
-              <TabsTrigger value="sessions">
-                Sessions
-              </TabsTrigger>
+              <TabsTrigger value="traces">Traces</TabsTrigger>
+              <TabsTrigger value="spans">Spans</TabsTrigger>
+              <TabsTrigger value="sessions">Sessions</TabsTrigger>
             </TabsList>
           </div>
           <div className="flex-grow flex">
@@ -99,23 +86,25 @@ export default function Traces() {
               topRight: false,
               bottomRight: false,
               bottomLeft: false,
-              topLeft: false
+              topLeft: false,
             }}
             defaultSize={{
-              width: 1000
+              width: 1000,
             }}
           >
             <div className="w-full h-full flex">
-              <TraceView
-                onClose={() => {
-                  searchParams.delete('traceId');
-                  searchParams.delete('spanId');
-                  router.push(`${pathName}?${searchParams.toString()}`);
-                  setIsSidePanelOpen(false);
-                  setTraceId(null);
-                }}
-                traceId={traceId!}
-              />
+              <TraceViewContextProvider>
+                <TraceView
+                  onClose={() => {
+                    searchParams.delete("traceId");
+                    searchParams.delete("spanId");
+                    router.push(`${pathName}?${searchParams.toString()}`);
+                    setIsSidePanelOpen(false);
+                    setTraceId(null);
+                  }}
+                  traceId={traceId!}
+                />
+              </TraceViewContextProvider>
             </div>
           </Resizable>
         </div>

@@ -7,6 +7,7 @@ import React, { useMemo, useRef } from "react";
 import { AgentSessionButton } from "@/components/traces/agent-session-button";
 import ShareTraceButton from "@/components/traces/share-trace-button";
 import TraceView, { TraceViewHandle } from "@/components/traces/trace-view";
+import { TraceViewContextProvider } from "@/components/traces/trace-view/context";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/ui/header";
 import { Trace as TraceType } from "@/lib/traces/types";
@@ -51,7 +52,9 @@ const Trace = ({ trace, projectId }: { trace: TraceType; projectId: string }) =>
           <ShareTraceButton trace={{ id: trace.id, visibility: trace.visibility }} projectId={projectId} />
         </div>
       </Header>
-      <TraceView ref={traceViewRef} propsTrace={trace} fullScreen onClose={() => {}} traceId={trace.id} />
+      <TraceViewContextProvider>
+        <TraceView ref={traceViewRef} propsTrace={trace} fullScreen onClose={() => {}} traceId={trace.id} />
+      </TraceViewContextProvider>
     </>
   );
 };

@@ -1,5 +1,6 @@
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { ChevronDown, ChevronRight, X } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 
 import { getDuration, getDurationString } from "@/lib/flow/utils";
 import { Span } from "@/lib/traces/types";
@@ -29,7 +30,7 @@ interface SpanCardProps {
   onSelectTime?: (time: number) => void;
 }
 
-export function SpanCard({
+const SpanCard = ({
   span,
   childSpans,
   parentY,
@@ -42,24 +43,31 @@ export function SpanCard({
   traceStartTime,
   activeSpans,
   onSelectTime,
-}: SpanCardProps) {
+}: SpanCardProps) => {
   const [isSelected, setIsSelected] = useState(false);
-  const [segmentHeight, setSegmentHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const segmentHeight = useMemo(
+    () => (ref?.current ? Math.max(0, ref.current.getBoundingClientRect().y - parentY) : 36),
+    [parentY, ref.current]
+  );
+  const childrenContainerRef = useRef<HTMLDivElement>(null);
 
-  const childrenSpans = childSpans[span.spanId];
+  const childrenSpans = childSpans[span.spanId] || [];
+  const hasChildren = childrenSpans.length > 0;
 
-  const hasChildren = childrenSpans && childrenSpans.length > 0;
+  const virtualizer = useVirtualizer({
+    count: !collapsedSpans.has(span.spanId) ? childrenSpans.length : 0,
+    getScrollElement: () => childrenContainerRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 1,
+    getItemKey: (index) => childrenSpans[index].spanId,
+  });
 
-  useEffect(() => {
-    if (ref.current) {
-      setSegmentHeight(Math.max(0, ref.current.getBoundingClientRect().y - parentY));
-    }
-  }, [parentY, collapsedSpans]);
+  const virtualItems = virtualizer.getVirtualItems();
 
   useEffect(() => {
     setIsSelected(selectedSpan?.spanId === span.spanId);
-  }, [selectedSpan]);
+  }, [selectedSpan, span.spanId]);
 
   return (
     <div className="text-md flex w-full flex-col" ref={ref}>
@@ -97,7 +105,6 @@ export function SpanCard({
           </div>
           {span.pending ? (
             isStringDateOld(span.startTime) ? (
-              // TODO: Fix this tooltip.
               <NoSpanTooltip>
                 <div className="flex rounded bg-secondary p-1">
                   <X className="w-4 h-4 text-secondary-foreground" />
@@ -112,7 +119,7 @@ export function SpanCard({
             </div>
           )}
           <div
-            className="z-30 top-[-px]  hover:bg-red-100/10 absolute transition-all"
+            className="z-30 top-[-px] hover:bg-red-100/10 absolute transition-all"
             style={{
               width: containerWidth,
               height: ROW_HEIGHT,
@@ -170,29 +177,58 @@ export function SpanCard({
           </div>
         </div>
       </div>
-      {!collapsedSpans.has(span.spanId) && (
-        <div className="flex flex-col">
-          {childrenSpans &&
-            childrenSpans.map((child, index) => (
-              <div className="pl-6 relative" key={index}>
-                <SpanCard
-                  activeSpans={activeSpans}
-                  traceStartTime={traceStartTime}
-                  span={child}
-                  childSpans={childSpans}
-                  parentY={ref.current?.getBoundingClientRect().y || 0}
-                  onSpanSelect={onSpanSelect}
-                  containerWidth={containerWidth}
-                  selectedSpan={selectedSpan}
-                  collapsedSpans={collapsedSpans}
-                  onToggleCollapse={onToggleCollapse}
-                  onSelectTime={onSelectTime}
-                  depth={depth + 1}
-                />
-              </div>
-            ))}
+
+      {/* Virtualized children container */}
+      {!collapsedSpans.has(span.spanId) && hasChildren && (
+        <div className="flex flex-col relative" ref={childrenContainerRef}>
+          <div
+            style={{
+              height: virtualizer.getTotalSize(),
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                transform: `translateY(${virtualItems[0]?.start ?? 0}px)`,
+              }}
+            >
+              {virtualItems.map((virtualItem) => {
+                const childSpan = childrenSpans[virtualItem.index];
+                return (
+                  <div
+                    key={virtualItem.key}
+                    ref={virtualizer.measureElement}
+                    data-index={virtualItem.index}
+                    className="pl-6 relative"
+                  >
+                    <SpanCard
+                      activeSpans={activeSpans}
+                      traceStartTime={traceStartTime}
+                      span={childSpan}
+                      childSpans={childSpans}
+                      parentY={ref.current?.getBoundingClientRect().y || 0}
+                      onSpanSelect={onSpanSelect}
+                      containerWidth={containerWidth}
+                      selectedSpan={selectedSpan}
+                      collapsedSpans={collapsedSpans}
+                      onToggleCollapse={onToggleCollapse}
+                      onSelectTime={onSelectTime}
+                      depth={depth + 1}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
-}
+};
+
+export default memo(SpanCard);

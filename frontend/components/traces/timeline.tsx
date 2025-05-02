@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 
-import { getDuration } from '@/lib/flow/utils';
-import { Span } from '@/lib/traces/types';
-import { SPAN_TYPE_TO_COLOR } from '@/lib/traces/utils';
-
+import { getDuration } from "@/lib/flow/utils";
+import { Span } from "@/lib/traces/types";
+import { SPAN_TYPE_TO_COLOR } from "@/lib/traces/utils";
 
 interface TimelineProps {
   spans: Span[];
   childSpans: { [key: string]: Span[] };
   collapsedSpans: Set<string>;
   browserSessionTime: number | null;
-  containerHeight: number;
+  scrollRef: RefObject<HTMLDivElement | null>;
 }
 
 interface SegmentEvent {
@@ -28,18 +28,9 @@ interface Segment {
 
 const HEIGHT = 32;
 
-export default function Timeline({
-  spans,
-  childSpans,
-  collapsedSpans,
-  browserSessionTime,
-  containerHeight
-}: TimelineProps) {
+export default function Timeline({ spans, childSpans, scrollRef, collapsedSpans, browserSessionTime }: TimelineProps) {
   const [segments, setSegments] = useState<Segment[]>([]);
   const [timeIntervals, setTimeIntervals] = useState<string[]>([]);
-  const [startTime, setStartTime] = useState<number>(0);
-  const [timelineWidthInMilliseconds, setTimelineWidthInMilliseconds] = useState<number>(0);
-
   const ref = useRef<HTMLDivElement>(null);
 
   const traverse = useCallback(
@@ -94,8 +85,6 @@ export default function Timeline({
       endTime = Math.max(endTime, new Date(span.endTime).getTime());
     }
 
-    setStartTime(startTime);
-
     const totalDuration = endTime - startTime;
 
     const upperIntervalInSeconds = Math.ceil(totalDuration / 1000);
@@ -103,12 +92,11 @@ export default function Timeline({
 
     const timeIntervals = [];
     for (let i = 0; i < 10; i++) {
-      timeIntervals.push((i * unit).toFixed(2) + 's');
+      timeIntervals.push((i * unit).toFixed(2) + "s");
     }
     setTimeIntervals(timeIntervals);
 
     const upperIntervalInMilliseconds = upperIntervalInSeconds * 1000;
-    setTimelineWidthInMilliseconds(upperIntervalInMilliseconds);
 
     const segments: Segment[] = [];
 
@@ -117,21 +105,19 @@ export default function Timeline({
 
       const width = (spanDuration / upperIntervalInMilliseconds) * 100;
 
-      const left = (new Date(span.startTime).getTime() - startTime) / upperIntervalInMilliseconds * 100;
+      const left = ((new Date(span.startTime).getTime() - startTime) / upperIntervalInMilliseconds) * 100;
 
       const segmentEvents = [] as SegmentEvent[];
 
       for (const event of span.events) {
         const eventLeft =
-          ((new Date(event.timestamp).getTime() -
-            new Date(span.startTime).getTime()) /
-            upperIntervalInMilliseconds) *
+          ((new Date(event.timestamp).getTime() - new Date(span.startTime).getTime()) / upperIntervalInMilliseconds) *
           100;
 
         segmentEvents.push({
           id: event.id,
           name: event.name,
-          left: eventLeft
+          left: eventLeft,
         });
       }
 
@@ -139,70 +125,90 @@ export default function Timeline({
         left,
         width,
         span,
-        events: segmentEvents
+        events: segmentEvents,
       });
     }
 
     setSegments(segments);
-  }, [spans, childSpans, collapsedSpans]);
+  }, [spans, childSpans, collapsedSpans, traverse]);
+
+  const virtualizer = useVirtualizer({
+    count: segments.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 36,
+    overscan: 5,
+    getItemKey: (index) => index,
+  });
+
+  const items = virtualizer.getVirtualItems();
 
   return (
     <div className="flex flex-col h-full w-full relative" ref={ref}>
-      <div className="bg-background flex text-xs w-full border-b z-30 sticky top-0 h-10 px-4">
-        <div className="flex w-full relative">
-          {timeIntervals.map((interval, index) => (
-            <div
-              className="border-l text-secondary-foreground pl-1 flex items-center min-w-12 relative z-0"
-              style={{ width: '10%' }}
-              key={index}
-            >
-              {interval}
-            </div>
-          ))}
-          <div className="border-r" />
-          {browserSessionTime && (
-            <div className="absolute top-0 bg-primary z-50 w-[1px]"
-              style={{
-                left: ((browserSessionTime - startTime) / timelineWidthInMilliseconds) * 100 + '%',
-                height: containerHeight
-              }}
-            />
-          )}
-        </div>
+      <div className="flex w-full relative bg-background text-xs border-b z-30 h-full max-h-10 top-0 px-4">
+        {timeIntervals.map((interval, index) => (
+          <div
+            className="border-l text-secondary-foreground pl-1 flex items-center min-w-12 relative z-0"
+            style={{ width: "10%" }}
+            key={index}
+          >
+            {interval}
+          </div>
+        ))}
+        <div className="border-r" />
+        {browserSessionTime && <div className="absolute top-0 bg-primary z-50 w-[1px]" style={{}} />}
       </div>
-      <div className="px-4">
-        <div className="flex flex-col space-y-1 w-full pt-[6px] relative">
-          {segments.map((segment, index) => (
-            <div
-              key={index}
-              className="relative border-secondary-foreground/20"
-              style={{
-                height: HEIGHT
-              }}
-            >
+      <div
+        style={{
+          height: virtualizer.getTotalSize(),
+          width: "100%",
+          position: "relative",
+        }}
+        className="px-4"
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            transform: `translateY(${items[0]?.start ?? 0}px)`,
+          }}
+          className="flex flex-col space-y-1 w-full h-full pt-[6px] relative"
+        >
+          {items.map((item, index) => {
+            const segment = segments[item.index];
+            return (
               <div
-                className="rounded relative z-20"
+                key={index}
+                className="relative border-secondary-foreground/20"
                 style={{
-                  backgroundColor: SPAN_TYPE_TO_COLOR[segment.span.spanType],
-                  marginLeft: segment.left + '%',
-                  width: 'max(' + segment.width + '%, 2px)',
-                  height: HEIGHT
+                  height: HEIGHT,
                 }}
               >
-                {segment.events.map((event, index) => (
-                  <div
-                    key={index}
-                    className="absolute bg-orange-400 w-1 rounded"
-                    style={{
-                      left: event.left + '%',
-                      top: 0,
-                      height: HEIGHT
-                    }}
-                  />
-                ))}
+                <div
+                  className="rounded relative z-20"
+                  style={{
+                    backgroundColor: SPAN_TYPE_TO_COLOR[segment.span.spanType],
+                    marginLeft: segment.left + "%",
+                    width: "max(" + segment.width + "%, 2px)",
+                    height: HEIGHT,
+                  }}
+                >
+                  {segment.events.map((event, index) => (
+                    <div
+                      key={index}
+                      className="absolute bg-orange-400 w-1 rounded"
+                      style={{
+                        left: event.left + "%",
+                        top: 0,
+                        height: HEIGHT,
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
