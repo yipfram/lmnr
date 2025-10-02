@@ -1,16 +1,16 @@
-# This compose definition pulls the latest images from the GitHub Container Registry.
-# This is the best and fastest for self-hosting, as the images are already built and ready to go.
-# If you want to build images locally, you can use the docker-compose-local-build.yml file instead.
-
-name: lmnr
+# documentation: https://docs.lmnr.ai
+# slogan: The single open-source platform to trace, evaluate, and analyze AI agents.
+# category: ai
+# tags: ai, observability, tracing, evaluation, analytics, llm, agents, monitoring, opentelemetry
+# logo: svgs/laminar.svg
+# port: 5667
 
 services:
   rabbitmq:
-    image: rabbitmq
-    pull_policy: always
+    image: rabbitmq:latest
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_USER=${SERVICE_USER_RABBITMQ}
+      - RABBITMQ_DEFAULT_PASS=${SERVICE_PASSWORD_RABBITMQ}
     healthcheck:
       test: rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_local_alarms
       interval: 10s
@@ -19,21 +19,15 @@ services:
 
   clickhouse:
     image: clickhouse/clickhouse-server:latest
-    pull_policy: always
-    container_name: clickhouse
     volumes:
-      - type: volume
-        source: clickhouse-data
-        target: /var/lib/clickhouse/
-      - type: volume
-        source: clickhouse-logs
-        target: /var/log/clickhouse-server/
+      - clickhouse-data:/var/lib/clickhouse
+      - clickhouse-logs:/var/log/clickhouse-server
       - type: bind
         source: ./clickhouse-profiles-config.xml
         target: /etc/clickhouse-server/users.d/lmnr.xml
     environment:
-      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
-      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_USER=${SERVICE_USER_CLICKHOUSE}
+      - CLICKHOUSE_PASSWORD=${SERVICE_PASSWORD_CLICKHOUSE}
     cap_add:
       - SYS_NICE
       - NET_ADMIN
@@ -44,40 +38,35 @@ services:
         hard: 262144
 
   postgres:
-    image: postgres:16
-    pull_policy: always
+    image: postgres:16-alpine
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - POSTGRES_DB=${POSTGRES_DB:-lmnr}
     healthcheck:
       test:
-        ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
-      interval: 2s
-      timeout: 5s
-      retries: 5
+        [
+          "CMD-SHELL",
+          "pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+        ]
+      interval: 5s
+      timeout: 20s
+      retries: 10
 
   query-engine:
-    image: ghcr.io/lmnr-ai/query-engine
-    pull_policy: always
-    ports:
-      - "${QUERY_ENGINE_HOST_PORT:-8903}:8903"
+    image: ghcr.io/lmnr-ai/query-engine:latest
     environment:
-      PORT: 8903
+      - PORT=8903
     healthcheck:
-      test: ["CMD", "sleep", "5"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8903/health || exit 1"]
       interval: 10s
-      timeout: 6s
-      retries: 1
+      timeout: 10s
+      retries: 3
 
   app-server:
-    image: ghcr.io/lmnr-ai/app-server
-    pull_policy: always
-    ports:
-      - "${APP_SERVER_HOST_PORT:-8000}:8000"
-      - "${APP_SERVER_GRPC_HOST_PORT:-8001}:8001"
+    image: ghcr.io/lmnr-ai/app-server:latest
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,46 +75,46 @@ services:
       clickhouse:
         condition: service_started
       query-engine:
-        condition: service_started
+        condition: service_healthy
     environment:
-      PORT: 8000
-      GRPC_PORT: 8001
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      RABBITMQ_URL: amqp://${RABBITMQ_DEFAULT_USER}:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672/%2f
-      CLICKHOUSE_URL: http://clickhouse:8123
-      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
-      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
-      CLICKHOUSE_RO_USER: ${CLICKHOUSE_RO_USER}
-      CLICKHOUSE_RO_PASSWORD: ${CLICKHOUSE_RO_PASSWORD}
-      SHARED_SECRET_TOKEN: ${SHARED_SECRET_TOKEN}
-      ENVIRONMENT: FULL
-      AEAD_SECRET_KEY: ${AEAD_SECRET_KEY}
-      QUERY_ENGINE_URL: http://query-engine:8903
+      - PORT=8000
+      - GRPC_PORT=8001
+      - DATABASE_URL=postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/${POSTGRES_DB:-lmnr}
+      - RABBITMQ_URL=amqp://${SERVICE_USER_RABBITMQ}:${SERVICE_PASSWORD_RABBITMQ}@rabbitmq:5672/%2f
+      - CLICKHOUSE_URL=http://clickhouse:8123
+      - CLICKHOUSE_USER=${SERVICE_USER_CLICKHOUSE}
+      - CLICKHOUSE_PASSWORD=${SERVICE_PASSWORD_CLICKHOUSE}
+      - CLICKHOUSE_RO_USER=${SERVICE_USER_CLICKHOUSE-RO}
+      - CLICKHOUSE_RO_PASSWORD=${SERVICE_PASSWORD_CLICKHOUSE-RO}
+      - SHARED_SECRET_TOKEN=${SERVICE_PASSWORD_64_SHAREDSECRET}
+      - ENVIRONMENT=FULL
+      - AEAD_SECRET_KEY=${SERVICE_BASE64_64_AEAD}
+      - QUERY_ENGINE_URL=http://query-engine:8903
 
   frontend:
-    image: ghcr.io/lmnr-ai/frontend
-    ports:
-      - "${FRONTEND_HOST_PORT:-5667}:5667"
-    pull_policy: always
+    image: ghcr.io/lmnr-ai/frontend:latest
     depends_on:
       postgres:
         condition: service_healthy
       clickhouse:
         condition: service_started
+      app-server:
+        condition: service_started
     environment:
-      PORT: 5667
-      BACKEND_URL: http://app-server:8000
-      SHARED_SECRET_TOKEN: ${SHARED_SECRET_TOKEN}
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      NEXTAUTH_URL: http://localhost:5667
-      NEXTAUTH_SECRET: some_secret
-      NEXT_PUBLIC_URL: http://localhost:5667
-      ENVIRONMENT: FULL
-      CLICKHOUSE_URL: http://clickhouse:8123
-      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
-      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      AEAD_SECRET_KEY: ${AEAD_SECRET_KEY}
+      - SERVICE_URL_FRONTEND_5667
+      - PORT=5667
+      - BACKEND_URL=http://app-server:8000
+      - SHARED_SECRET_TOKEN=${SERVICE_PASSWORD_64_SHAREDSECRET}
+      - DATABASE_URL=postgres://${SERVICE_USER_POSTGRES}:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/${POSTGRES_DB:-lmnr}
+      - NEXTAUTH_URL=${SERVICE_FQDN_FRONTEND}
+      - NEXTAUTH_SECRET=${SERVICE_PASSWORD_64_NEXTAUTH}
+      - NEXT_PUBLIC_URL=${SERVICE_FQDN_FRONTEND}
+      - ENVIRONMENT=FULL
+      - CLICKHOUSE_URL=http://clickhouse:8123
+      - CLICKHOUSE_USER=${SERVICE_USER_CLICKHOUSE}
+      - CLICKHOUSE_PASSWORD=${SERVICE_PASSWORD_CLICKHOUSE}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AEAD_SECRET_KEY=${SERVICE_BASE64_64_AEAD}
 
 volumes:
   clickhouse-data:
